@@ -14,6 +14,8 @@ const CourseManage = () => {
   const [course, setCourse] = useState()
   const [isOpen, setIsOpen] = useState(false)
   const [isEdit, setIsEdit] = useState(false)
+  const [isConfirm, setIsConfirm] = useState(false)
+  const [confirmToDelete, setConfirmToDelete] = useState()
   const navigate = useNavigate();
   useEffect(() => {
     const getCourse = async () => {
@@ -26,41 +28,49 @@ const CourseManage = () => {
     };
     getCourse();
   }, []);
-  const handleHiddenCoure = async (id, index) => {
+  const handleConfirmToDelete = (course, index) =>{
+    setIsConfirm(true)
+    setCourse(course)
+  }
+  const handleHiddenCourse = async () => {
     if (countRequest === 1) return;
     setCountRequest(0);
-    try {
-      const result = await instance.patch(`admin/courses/${id}?hidden=true`);
-      if (result) {
-        courses[index].status = 1;
-        setCourses([...courses]);
-        setMessage(result.data.message);
+    if(confirmToDelete === course.name){
+      try {
+        const result = await instance.patch(`admin/courses/${course._id}?deleted=true`);
+        if (result) {
+          setMessage(result.data.message);
+          const index = courses.findIndex(item => item._id === course._id)
+          courses.splice(index, 1)
+          setCourses([...courses]);
+          setIsConfirm(false)
+          setCourse(false)
+          setConfirmToDelete('')
+          setCountRequest(0);
+        }
+      } catch (error) {
+        setMessage(error.response.data.message);
+        setIsConfirm(false)
+        setCourse(false)
+        setConfirmToDelete('')
         setCountRequest(0);
       }
-    } catch (error) {
-        console.log(error)
-      setMessage(error.response.data.message);
-      setCountRequest(0);
-    }
-  };
-  const handleShowCoure = async (id, index) => {
-    if (countRequest === 1) return;
-    setCountRequest(0);
-    try {
-      const result = await instance.patch(`admin/courses/${id}?hidden=false`);
-      if (result) {
-        courses[index].status = 2;
-        setCourses([...courses]);
-        setMessage(result.data.message);
-        setCountRequest(0);
-      }
-    } catch (error) {
-      setMessage(error.response.data.message);
-      setCountRequest(0);
+    }else{
+      setMessage('Nhập sai tên, vui lòng nhập lại!')
     }
   };
   return (
     <>
+      {isConfirm && (
+        <div className="w-[30rem] bg-white fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 p-6 rounded-xl border-2 border-gray-400">
+          <label htmlFor="course_name text-xl">Nhập lại tên: <span className="font-bold">{course?.name}</span> để xóa</label>
+          <input className="w-full py-[6px] px-[0.7rem] font-bold my-4 border-[2px] border-gray-400 rounded-sm" type="text" id="course_name" placeholder="nhập lại tên khóa học" value={confirmToDelete} onChange={(e) => setConfirmToDelete(e.target.value)} /> <br/>
+          <div className="w-full flex justify-end gap-[4px]">
+            <button onClick={() => setIsConfirm(false)} className="px-4 py-2 rounded-full bg-green-500 font-bold text-white hover:bg-[#20404f]">Hủy</button>
+            <button onClick={() => handleHiddenCourse()} className="px-4 py-2 rounded-full bg-red-500 font-bold text-white hover:bg-[#20404f]">Xóa</button>
+          </div>
+        </div>
+      )}
       <NotificationPopup message={message} setMessage={setMessage} />
       <CourseForm isOpen={isOpen} setIsOpen={setIsOpen} setCourses={setCourses} />
       <CourseEditForm isEdit={isEdit} setIsEdit={setIsEdit} courses={courses} setCourses={setCourses} course={course}/>
@@ -106,37 +116,10 @@ const CourseManage = () => {
                     </td>
                     <td className="px-4 py-2">
                       <span
-                        className={`px-2 py-1 rounded-full text-xs ${
-                          course.status === 2
-                            ? "bg-green-300 text-white"
-                            : "bg-red-600 text-white"
-                        }`}
-                      >
-                        {course.status === 2
-                          ? "Hoạt động"
-                          : course.status === 1
-                          ? "Đang ẩn"
-                          : "Đang bị xóa"}
-                      </span>
+                        className={`px-2 py-1 rounded-full text-xs bg-green-300 text-white `}
+                      >Đang hoạt động</span>
                     </td>
                     <td className="px-4 py-2 flex items-center justify-center gap-[4px] mt-[0.6rem]">
-                      {course.status === 1 ? (
-                        <button
-                          onClick={() => handleShowCoure(course._id, index)}
-                          className="w-full py-[4px] px-[6px] bg-green-500 rounded-sm hover:bg-[#aed2e9] text-white font-bold text-sm "
-                        >
-                          Mở khóa
-                        </button>
-                      ) : course.status === 2 ? (
-                        <button
-                          onClick={() => handleHiddenCoure(course._id, index)}
-                          className="w-full py-[4px] px-[6px] bg-red-600 rounded-sm  hover:bg-[#aed2e9] text-white font-bold text-sm "
-                        >
-                          Tạm ẩn
-                        </button>
-                      ) : (
-                        ""
-                      )}
                       <button
                           onClick={() => navigate(`section?courseId=${course._id}`)}
                           className="w-full py-[4px] px-[6px] bg-green-500 rounded-sm hover:bg-[#aed2e9] text-white font-bold text-sm "
@@ -145,10 +128,16 @@ const CourseManage = () => {
                         </button>
                         <button
                           onClick={() => {setCourse(course), setIsEdit(true)}}
-                          className="w-full py-[4px] px-[6px] bg-green-500 rounded-sm hover:bg-[#aed2e9] text-white font-bold text-sm "
+                          className="w-full py-[4px] px-[6px] bg-blue-500 rounded-sm hover:bg-[#aed2e9] text-white font-bold text-sm "
                         >
                           Sửa
                         </button>
+                        <button
+                        onClick={() => handleConfirmToDelete(course, index)}
+                        className="w-full py-[4px] px-[6px] bg-red-600 rounded-sm  hover:bg-[#aed2e9] text-white font-bold text-sm "
+                        >
+                          Xóa 
+                      </button>
                     </td>
                   </tr>
                 ))}

@@ -13,6 +13,8 @@ const LessonManage = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isEditLesson, setIsEditLesson] = useState(false);
   const [lesson, setLesson] = useState();
+  const [isConfirm, setIsConfirm] = useState(false);
+  const [confirmToDelete, setConfirmToDelete] = useState();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const courseId = searchParams.get("courseId");
@@ -34,23 +36,27 @@ const LessonManage = () => {
   useEffect(() => {
     setLessons((prevLessons) =>
       prevLessons.map((item) => ({
-        ...item, // tạo bản sao của mỗi đối tượng
-        show: false // cập nhật giá trị show thành false
+        ...item,
+        show: false,
       }))
     );
   }, []);
-  const handleShowMoreLesson = useCallback((index) =>{
+  const handleConfirmToDelete = (lesson) => {
+    setIsConfirm(true);
+    setLesson(lesson);
+  };
+  const handleShowMoreLesson = useCallback((index) => {
     setLessons((prevLessons) => {
       const updatedLessons = prevLessons.map((item, i) => {
         if (i === index) {
-          return { ...item, show: !item.show }
+          return { ...item, show: !item.show };
         }
         return item;
       });
-  
+
       return updatedLessons;
     });
-  },[])
+  }, []);
   const convertAnswerTypeChoose = (index) => {
     switch (index) {
       case 0:
@@ -63,44 +69,98 @@ const LessonManage = () => {
         return "D.";
     }
   };
-  //   const handleHiddenSection = async (id, index) => {
-  //     if (countRequest === 1) return;
-  //     setCountRequest(0);
-  //     try {
-  //       const result = await instance.patch(`admin/sections/${id}?deleted=true`);
-  //       if (result) {
-  //         sections[index].deleted = true;
-  //         setSections([...sections]);
-  //         setMessage(result.data.message);
-  //         setCountRequest(0);
-  //       }
-  //     } catch (error) {
-  //       setMessage(error.response.data.message);
-  //       setCountRequest(0);
-  //     }
-  //   };
-  //   const handleShowSection = async (id, index) => {
-  //     if (countRequest === 1) return;
-  //     setCountRequest(0);
-  //     try {
-  //       const result = await instance.patch(`admin/sections/${id}?deleted=false`);
-  //       if (result) {
-  //         sections[index].deleted = false;
-  //         setSections([...sections]);
-  //         setMessage(result.data.message);
-  //         setCountRequest(0);
-  //       }
-  //     } catch (error) {
-  //       setMessage(error.response.data.message);
-  //       setCountRequest(0);
-  //     }
-  //   };
+  const handleDeleteLesson = async () => {
+    if (countRequest === 1) return;
+    setCountRequest(0);
+    if (confirmToDelete === lesson.name) {
+      try {
+        const result = await instance.patch(
+          `admin/lessons/${lesson._id}?deleted=true`
+        );
+        if (result) {
+          setMessage(result.data.message);
+          const index = lessons.findIndex((item) => item._id === lesson._id);
+          lessons.splice(index, 1);
+          setLessons([...lessons]);
+          setIsConfirm(false);
+          setLesson(false);
+          setConfirmToDelete("");
+          setCountRequest(0);
+        }
+      } catch (error) {
+        setMessage(error.response.data.message);
+        setIsConfirm(false);
+        setLesson(false);
+        setConfirmToDelete("");
+        setCountRequest(0);
+      }
+    } else {
+      setMessage("Nhập sai tên, vui lòng nhập lại!");
+    }
+  };
+  const handleDeleteQuestion = async(id, index, lessonIndex, lessonId) => {
+    if (confirm("Bạn có muốn xóa câu hỏi?")) {
+      try {
+        await instance.patch(
+          `admin/questions/delete/${id}`
+        );
+        const result = await instance.patch(
+          `admin/lessons/delete_question/${lessonId}?index=${index}`
+        );
+        if (result) {
+          setMessage(result.data.message);
+          lessons[lessonIndex].questions.splice(index, 1);
+          setLessons([...lessons]);
+          setCountRequest(0);
+        }
+      } catch (error) {
+        setMessage(error.response.data.message);
+        setCountRequest(0);
+      }
+    }
+  }
   return (
     <>
+      {isConfirm && (
+        <div className="w-[30rem] bg-white fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 p-6 rounded-xl border-2 border-gray-400">
+          <label htmlFor="course_name text-xl">
+            Nhập lại tên: <span className="font-bold">{lesson?.name}</span> để
+            xóa
+          </label>
+          <input
+            className="w-full py-[6px] px-[0.7rem] font-bold my-4 border-[2px] border-gray-400 rounded-sm"
+            type="text"
+            id="course_name"
+            placeholder="nhập lại tên khóa học"
+            value={confirmToDelete}
+            onChange={(e) => setConfirmToDelete(e.target.value)}
+          />{" "}
+          <br />
+          <div className="w-full flex justify-end gap-[4px]">
+            <button
+              onClick={() => setIsConfirm(false)}
+              className="px-4 py-2 rounded-full bg-green-500 font-bold text-white hover:bg-[#20404f]"
+            >
+              Hủy
+            </button>
+            <button
+              onClick={() => handleDeleteLesson()}
+              className="px-4 py-2 rounded-full bg-red-500 font-bold text-white hover:bg-[#20404f]"
+            >
+              Xóa
+            </button>
+          </div>
+        </div>
+      )}
       <NotificationPopup message={message} setMessage={setMessage} />
-      <LessonForm isOpen={isOpen} setIsOpen={setIsOpen} />
-      <LessonEditForm isEditLesson={isEditLesson} setIsEditLesson={setIsEditLesson} lessons={lessons} setLessons={setLessons} lesson={lesson} />
-      {/* <SectionForm  setSections={setSections} /> */}
+      <LessonForm isOpen={isOpen} setIsOpen={setIsOpen} courseId={courseId} />
+      <LessonEditForm
+        isEditLesson={isEditLesson}
+        setIsEditLesson={setIsEditLesson}
+        lessons={lessons}
+        setLessons={setLessons}
+        lesson={lesson}
+      />
       <div className="container mx-auto mt-6">
         <div className="w-[98%] mb-[0.5rem] flex justify-between mx-auto">
           <ul className="flex gap-2">
@@ -142,34 +202,45 @@ const LessonManage = () => {
         <div className="container mx-auto px-6">
           <div className="space-y-6">
             {lessons.length !== 0 &&
-              lessons.map((lesson, index) => (
+              lessons.map((lesson, lessonIndex) => (
                 <div
                   key={lesson._id}
-                  className={`bg-white shadow-lg rounded-lg p-4 space-y-4 transition-all relative pb-[2rem] ${lesson.show ? '' : 'h-[8.5rem] overflow-hidden'} `}
+                  className={`bg-white shadow-lg rounded-lg p-4 space-y-4 transition-all relative pb-[2rem] ${
+                    lesson.show ? "" : "h-[8.8rem] overflow-hidden"
+                  } `}
                 >
-                  <button 
-                    onClick={() => handleShowMoreLesson(index)}
-                    className="absolute bottom-1 left-1/2 -translate-x-1/2 hover:text-blue-600 font-semibold">
-                      {lesson.show ? 'Thu gọn' : 'Xem chi tiết'}
-                    </button> 
+                  <button
+                    onClick={() => handleShowMoreLesson(lessonIndex)}
+                    className="absolute bottom-1 left-1/2 -translate-x-1/2 hover:text-blue-600 font-semibold"
+                  >
+                    {lesson.show ? "Thu gọn" : "Xem chi tiết"}
+                  </button>
                   <div className="flex justify-between items-center">
                     <div>
                       <h2 className="text-xl font-semibold">
-                        Bài học: {lesson.name || index + 1}
+                        Bài học: {lesson.name || lessonIndex + 1}
                       </h2>
                       <h4 className="font-semibold text-lg">Phần thưởng :</h4>
-                      <p className="text-gray-600">
+                      <p className="text-gray-600 font-semibold ml-2">
                         Kinh nghiệm: {lesson.experiences}
                       </p>
-                      <p className="text-gray-600">Tiền xu: {lesson.gems}</p>
+                      <p className="text-gray-600 font-semibold ml-2">
+                        Tiền xu: {lesson.gems}
+                      </p>
                     </div>
                     <div className="space-x-2">
-                      <button 
-                        onClick={() => {setIsEditLesson(true), setLesson(lesson)}}
-                        className="bg-blue-500 text-white px-4 py-2 rounded-lg">
+                      <button
+                        onClick={() => {
+                          setIsEditLesson(true), setLesson(lesson);
+                        }}
+                        className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-gray-300"
+                      >
                         Sửa
                       </button>
-                      <button className="bg-red-500 text-white px-4 py-2 rounded-lg">
+                      <button
+                        onClick={() => handleConfirmToDelete(lesson)}
+                        className="bg-red-500 text-white px-6 py-2 rounded-lg hover:bg-green-300"
+                      >
                         Xóa
                       </button>
                     </div>
@@ -182,7 +253,6 @@ const LessonManage = () => {
                           key={lesson.questions[index].question._id}
                           className="bg-white p-4 rounded-lg shadow mb-4"
                         >
-                          {/* Hiển thị loại câu hỏi */}
                           <div className="mb-2">
                             <strong className="text-sm text-gray-700">
                               Loại câu hỏi:{" "}
@@ -191,76 +261,130 @@ const LessonManage = () => {
                               {lesson.questions[index].question.type}
                             </span>
                           </div>
-                          {lesson.questions[index].question.type === 'choose' ? (
+                          {lesson.questions[index].question.type ===
+                          "choose" ? (
                             <div>
-                              <span className="mr-2">Câu hỏi:</span><span className="font-semibold">{lesson.questions[index].question.question}</span>
+                              <span className="mr-2">Câu hỏi:</span>
+                              <span className="font-semibold">
+                                {lesson.questions[index].question.question}
+                              </span>
                               <p>Các câu trả lời:</p>
                               <ul className="ml-2">
-                                {lesson.questions[index].question.answers.map((answer, index) => (
-                                  <li className="font-semibold" key={index}>{convertAnswerTypeChoose(index)} : {answer}</li>
-                                ))}
+                                {lesson.questions[index].question.answers.map(
+                                  (answer, index) => (
+                                    <li className="font-semibold" key={index}>
+                                      {convertAnswerTypeChoose(index)} :{" "}
+                                      {answer}
+                                    </li>
+                                  )
+                                )}
                               </ul>
-                              <p className="font-semibold">Câu trả lời đúng : {lesson.questions[index].question.answers[+lesson.questions[index].question.correctChoose]}</p>
+                              <p className="font-semibold">
+                                Câu trả lời đúng :{" "}
+                                {
+                                  lesson.questions[index].question.answers[
+                                    +lesson.questions[index].question
+                                      .correctChoose
+                                  ]
+                                }
+                              </p>
                             </div>
-                          ) : lesson.questions[index].question.type === 'fill' ? (
+                          ) : lesson.questions[index].question.type ===
+                            "fill" ? (
                             <div>
-                              <span className="mr-2">Đoạn văn:</span><span className="font-semibold">{lesson.questions[index].question.document}</span>
+                              <span className="mr-2">Đoạn văn:</span>
+                              <span className="font-semibold">
+                                {lesson.questions[index].question.document}
+                              </span>
                               <ul className="flex gap-[3px]">
                                 <li>Các từ để chọn: </li>
-                                {lesson.questions[index].question.words.map((word, i) => (
-                                  <li className="font-semibold" key={i}>{word},</li>
-                                ))}
+                                {lesson.questions[index].question.words.map(
+                                  (word, i) => (
+                                    <li className="font-semibold" key={i}>
+                                      {word},
+                                    </li>
+                                  )
+                                )}
                               </ul>
                               <ul className="flex gap-[3px]">
                                 <li>Các từ khi sắp xếp đúng: </li>
-                                {lesson.questions[index].question.correctDocument.map((word, i) => (
-                                  <li className="font-semibold" key={i}>{word},</li>
+                                {lesson.questions[
+                                  index
+                                ].question.correctDocument.map((word, i) => (
+                                  <li className="font-semibold" key={i}>
+                                    {word},
+                                  </li>
                                 ))}
                               </ul>
                             </div>
-                          ) : lesson.questions[index].question.type === 'match' ? (
+                          ) : lesson.questions[index].question.type ===
+                            "match" ? (
                             <div>
                               <ul className="flex gap-[3px]">
                                 <li>Các từ cột trái: </li>
-                                {lesson.questions[index].question.leftOptions.map((word, i) => (
-                                  <li className="font-semibold" key={i}>{word},</li>
+                                {lesson.questions[
+                                  index
+                                ].question.leftOptions.map((word, i) => (
+                                  <li className="font-semibold" key={i}>
+                                    {word},
+                                  </li>
                                 ))}
                               </ul>
                               <ul className="flex gap-[3px]">
                                 <li>Các từ cột phải: </li>
-                                {lesson.questions[index].question.rightOptions.map((word, i) => (
-                                  <li className="font-semibold" key={i}>{word},</li>
+                                {lesson.questions[
+                                  index
+                                ].question.rightOptions.map((word, i) => (
+                                  <li className="font-semibold" key={i}>
+                                    {word},
+                                  </li>
                                 ))}
                               </ul>
                               <ul className="flex gap-[3px] font-semibold">
                                 <li>Các từ sau khi ghép đúng: </li>
-                                {lesson.questions[index].question.correctMatches.map((word, i) => (
+                                {lesson.questions[
+                                  index
+                                ].question.correctMatches.map((word, i) => (
                                   <li className="font-semibold" key={i}>
-                                    <p>{word.left} - {word.right} | </p>
+                                    <p>
+                                      {word.left} - {word.right} |{" "}
+                                    </p>
                                   </li>
                                 ))}
                               </ul>
-                            </div> 
-                            )
-                            : <div>
-                            <span className="mr-2">Câu văn:</span><span className="font-semibold">{lesson.questions[index].question.document}</span>
-                            <ul className="flex gap-[3px]">
-                              <li>Các từ để chọn: </li>
-                              {lesson.questions[index].question.words.map((word, i) => (
-                                <li className="font-semibold" key={i}>{word},</li>
-                              ))}
-                            </ul>
-                              <span className="font-semibold">Câu sau khi sắp xếp đúng: {lesson.questions[index].question.correctDocument}</span>
-                          </div>
-                          }
-                          {/* Hiển thị mô tả câu hỏi */}
-
-                          {/* Các nút chức năng: Sửa và Xóa */}
+                            </div>
+                          ) : (
+                            <div>
+                              <span className="mr-2">Câu văn:</span>
+                              <span className="font-semibold">
+                                {lesson.questions[index].question.document}
+                              </span>
+                              <ul className="flex gap-[3px]">
+                                <li>Các từ để chọn: </li>
+                                {lesson.questions[index].question.words.map(
+                                  (word, i) => (
+                                    <li className="font-semibold" key={i}>
+                                      {word},
+                                    </li>
+                                  )
+                                )}
+                              </ul>
+                              <span className="font-semibold">
+                                Câu sau khi sắp xếp đúng:{" "}
+                                {
+                                  lesson.questions[index].question
+                                    .correctDocument
+                                }
+                              </span>
+                            </div>
+                          )}
                           <div className="space-x-2 mt-[0.7rem]">
-                            <button className="bg-yellow-500 text-white px-3 py-1 rounded-lg">
+                            <button className="bg-blue-500 text-white px-3 py-1 rounded-lg">
                               Sửa
                             </button>
-                            <button className="bg-red-500 text-white px-3 py-1 rounded-lg">
+                            <button 
+                              onClick={() => handleDeleteQuestion(question.question._id, index, lessonIndex, lesson._id)}
+                              className="bg-red-500 text-white px-3 py-1 rounded-lg">
                               Xóa
                             </button>
                           </div>

@@ -12,6 +12,8 @@ const SectionManage = () => {
   const [isOpen, setIsOpen] = useState(false)
   const [isEdit, setIsEdit] = useState(false)
   const [section, setSection] = useState()
+  const [isConfirm, setIsConfirm] = useState(false)
+  const [confirmToDelete, setConfirmToDelete] = useState()
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams()
   const courseId = searchParams.get('courseId')
@@ -26,40 +28,49 @@ const SectionManage = () => {
     };
     getSection();
   }, []);
-  const handleHiddenSection = async (id, index) => {
-    if (countRequest === 1) return;
-    setCountRequest(0);
-    try {
-      const result = await instance.patch(`admin/sections/${id}?deleted=true`);
-      if (result) {
-        sections[index].deleted = true;
-        setSections([...sections]);
-        setMessage(result.data.message);
-        setCountRequest(0);
-      }
-    } catch (error) {
-      setMessage(error.response.data.message);
+  const handleConfirmToDelete = (section) =>{
+    setIsConfirm(true)
+    setSection(section)
+  }
+   const handleDeleteSection = async () => {
+      if (countRequest === 1) return;
       setCountRequest(0);
-    }
-  };
-  const handleShowSection = async (id, index) => {
-    if (countRequest === 1) return;
-    setCountRequest(0);
-    try {
-      const result = await instance.patch(`admin/sections/${id}?deleted=false`);
-      if (result) {
-        sections[index].deleted = false;
-        setSections([...sections]);
-        setMessage(result.data.message);
-        setCountRequest(0);
+      if(confirmToDelete === section.name){
+        try {
+          const result = await instance.patch(`admin/sections/${section._id}?deleted=true`);
+          if (result) {
+            setMessage(result.data.message);
+            const index = sections.findIndex(item => item._id === section._id)
+            sections.splice(index, 1)
+            setSections([...sections]);
+            setIsConfirm(false)
+            setSection(false)
+            setConfirmToDelete('')
+            setCountRequest(0);
+          }
+        } catch (error) {
+          setMessage(error.response.data.message)
+          setIsConfirm(false)
+          setSection(false)
+          setConfirmToDelete('')
+          setCountRequest(0);
+        }
+      }else{
+        setMessage('Nhập sai tên, vui lòng nhập lại!')
       }
-    } catch (error) {
-      setMessage(error.response.data.message);
-      setCountRequest(0);
-    }
-  };
+    };
   return (
     <>
+    {isConfirm && (
+        <div className="w-[30rem] bg-white fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 p-6 rounded-xl border-2 border-gray-400">
+          <label htmlFor="course_name text-xl">Nhập lại tên: <span className="font-bold">{section?.name}</span> để xóa</label>
+          <input className="w-full py-[6px] px-[0.7rem] font-bold my-4 border-[2px] border-gray-400 rounded-sm" type="text" id="course_name" placeholder="nhập lại tên khóa học" value={confirmToDelete} onChange={(e) => setConfirmToDelete(e.target.value)} /> <br/>
+          <div className="w-full flex justify-end gap-[4px]">
+            <button onClick={() => setIsConfirm(false)} className="px-4 py-2 rounded-full bg-green-500 font-bold text-white hover:bg-[#20404f]">Hủy</button>
+            <button onClick={() => handleDeleteSection()} className="px-4 py-2 rounded-full bg-red-500 font-bold text-white hover:bg-[#20404f]">Xóa</button>
+          </div>
+        </div>
+      )}
       <NotificationPopup message={message} setMessage={setMessage} />
       <SectionForm isOpen={isOpen} setIsOpen={setIsOpen} setSections={setSections} courseId={courseId} />
       <SectionEditForm isEdit={isEdit} setIsEdit={setIsEdit} sections={sections} setSections={setSections} section={section} courseId={courseId} />
@@ -112,32 +123,23 @@ const SectionManage = () => {
                       </span>
                     </td>
                     <td className="px-4 py-2 flex items-center justify-center gap-[4px] mt-[0.6rem]">
-                      {section.deleted ? (
-                        <button
-                          onClick={() => handleShowSection(section._id, index)}
-                          className="w-full py-[4px] px-[4px] bg-green-500 rounded-sm hover:bg-[#aed2e9] text-white font-bold text-sm "
-                        >
-                          Mở lại
-                        </button>
-                      ) : (
-                        <button
-                          onClick={() => handleHiddenSection(section._id, index)}
-                          className="w-full py-[4px] px-[4px] bg-red-600 rounded-sm  hover:bg-[#aed2e9] text-white font-bold text-sm "
-                        >
-                          Tạm xóa
-                        </button>
-                      ) }
                       <button
                           onClick={() => navigate(`/course_manage/milestone?courseId=${courseId}&sectionId=${section._id}`)}
-                          className="w-full py-[4px] px-[4px] bg-[#6977d1] rounded-sm hover:bg-[#aed2e9] text-white font-bold text-sm "
+                          className="w-full py-[4px] px-[4px] bg-green-500 rounded-sm hover:bg-[#aed2e9] text-white font-bold text-sm "
                         >
                           Xem 
                         </button>
                         <button
                           onClick={() => {setSection(section), setIsEdit(true)}}
-                          className="w-full py-[4px] px-[4px] bg-green-500 rounded-sm hover:bg-[#aed2e9] text-white font-bold text-sm "
+                          className="w-full py-[4px] px-[4px] bg-blue-500 rounded-sm hover:bg-[#aed2e9] text-white font-bold text-sm "
                         >
                           Sửa
+                        </button>
+                        <button
+                          onClick={() => handleConfirmToDelete(section)}
+                          className="w-full py-[4px] px-[4px] bg-red-600 rounded-sm  hover:bg-[#aed2e9] text-white font-bold text-sm "
+                        >
+                          Xóa
                         </button>
                     </td>
                   </tr>

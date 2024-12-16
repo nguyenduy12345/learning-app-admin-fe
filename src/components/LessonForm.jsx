@@ -1,143 +1,423 @@
 import React, { useState } from "react";
-import { useForm, Controller } from "react-hook-form";
+import { useForm } from "react-hook-form";
 
-const LessonForm = ({isOpen, setIsOpen}) => {
-  const { control, handleSubmit, register, reset, formState: { errors } } = useForm();
+import convertStringToArray from "../functions/convertStringToArray.js";
+import convertStringToArrayObjects from "../functions/convertStringToArrayObjects.js";
+const LessonForm = ({ isOpen, setIsOpen, courseId }) => {
+  const {
+    handleSubmit,
+    register,
+    formState: { errors, isSubmitting },
+  } = useForm();
   const [questions, setQuestions] = useState([]);
-
   const onSubmit = (data) => {
-    console.log("Form Data: ", data);
+    if (data) {
+      console.log(data);
+      console.log(questions);
+    }
   };
 
   const addQuestion = () => {
     setQuestions([
       ...questions,
       {
-        id: Date.now(),
-        type: "Choose",
-        questionText: "",
+        type: "choose",
+        courseId,
+        question: "",
+        answers: [],
+        correctChoose: "",
+        leftOptions: [],
+        rightOptions: [],
+        correctMatches: [],
+        stringMatches: "",
+        document: "",
+        words: [],
+        correctDocument: [],
+        countCorrect: "",
       },
     ]);
   };
 
-  const handleQuestionChange = (id, field, value) => {
-    setQuestions(questions.map((q) => (q.id === id ? { ...q, [field]: value } : q)));
+  const handleQuestionChange = (index, field, value) => {
+    setQuestions((prevQuestions) => {
+      const currentQuestions = [...prevQuestions];
+      switch (field) {
+        case "answers":
+        case "leftOptions":
+        case "rightOptions":
+        case "words":
+        case "correctDocument":
+          currentQuestions[index] = {
+            ...currentQuestions[index],
+            [field]: convertStringToArray(value),
+          };
+          break;
+        default:
+          currentQuestions[index][field] = value;
+      }
+      if (currentQuestions[index].type === "fill") {
+        currentQuestions[index]["countCorrect"] =
+          currentQuestions[index]["correctDocument"].length;
+      }
+      if (currentQuestions[index].type === "match") {
+        currentQuestions[index] = {
+          ...currentQuestions[index],
+          correctMatches: convertStringToArrayObjects(
+            currentQuestions[index].stringMatches
+          ),
+        };
+      }
+      return currentQuestions;
+    });
   };
-
+  const handleDeleteFormNewQuestion = (index) => {
+    questions.splice(index, 1);
+    setQuestions([...questions]);
+  };
   return (
-    isOpen && <div className="w-[70vw] absolute left-1/2 -translate-x-1/2 z-10 mx-auto flex items-center justify-center p-4">
-      <div className="bg-white p-6 rounded-lg shadow-lg w-full">
-      <i onClick={() => setIsOpen(false)} className="fa-sharp fa-solid fa-xmark absolute right-[2rem] top-[2rem] text-3xl cursor-pointer"></i>
-        <h2 className="text-2xl font-bold text-center mb-6">Tạo Bài Học Mới</h2>
-        <form onSubmit={handleSubmit(onSubmit)}>
-          {/* Lesson Title */}
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700" htmlFor="lessonTitle">
-              Tên Bài Học
-            </label>
-            <input
-              id="lessonTitle"
-              name="lessonTitle"
-              type="text"
-              className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              {...register("lessonTitle", { required: "Tên bài học là bắt buộc" })}
-            />
-            {errors.lessonTitle && <p className="text-red-500 text-xs mt-1">{errors.lessonTitle.message}</p>}
-          </div>
+    isOpen && (
+      <div className="w-[70vw] absolute left-1/2 -translate-x-1/2 z-10 mx-auto flex items-center justify-center p-4">
+        <div className="bg-white p-6 rounded-lg shadow-lg w-full">
+          <i
+            onClick={() => setIsOpen(false)}
+            className="fa-sharp fa-solid fa-xmark absolute right-[2rem] top-[2rem] text-3xl cursor-pointer"
+          ></i>
+          <h2 className="text-2xl font-bold text-center mb-6">
+            Tạo Bài Học Mới
+          </h2>
+          <form onSubmit={handleSubmit(onSubmit)}>
+            {/* Lesson Title */}
+            <div className="mb-4">
+              <label
+                className="block text-sm font-medium text-gray-700"
+                htmlFor="name"
+              >
+                Tên Bài Học
+              </label>
+              <input
+                id="name"
+                name="name"
+                type="text"
+                className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                {...register("name", {
+                  required: "Tên bài học là bắt buộc",
+                  pattern: {
+                    value:
+                      /^[A-Za-zÀ-ÿáàảãạăắằẳẵặâấầẩẫậèéẻẽẹêếềểễệìíỉĩịòóỏõọôốồổỗộơớờở̃ỡợùúủũụưứừửữựỳýỷỹỵđĐ0-9]+(?: [A-Za-zÀ-ÿáàảãạăắằẳẵặâấầẩẫậèéẻẽẹêếềểễệìíỉĩịòóỏõọôốồổỗộơớờở̃ỡợùúủũụưứừửữựỳýỷỹỵđĐ0-9]+)*$/,
+                    message:
+                      "Tên không được phép có dấu cách đầu tiên và mỗi từ phải cách nhau bằng một dấu cách.",
+                  },
+                  maxLength: {
+                    value: 255,
+                    message: "Tên không thể dài quá 255 ký tự",
+                  },
+                })}
+              />
+              {errors.name && (
+                <p className="text-red-500 text-xs mt-1">
+                  {errors.name.message}
+                </p>
+              )}
+            </div>
 
-          {/* Experiences */}
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700" htmlFor="experiences">
-              Phần thưởng - Experiences
-            </label>
-            <input
-              id="experiences"
-              name="experiences"
-              type="number"
-              className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              {...register("experiences", { required: "Số lượng Experiences là bắt buộc" })}
-            />
-            {errors.experiences && <p className="text-red-500 text-xs mt-1">{errors.experiences.message}</p>}
-          </div>
+            {/* Experiences */}
+            <div className="mb-4">
+              <label
+                className="block text-sm font-medium text-gray-700"
+                htmlFor="experiences"
+              >
+                Phần thưởng - Experiences
+              </label>
+              <input
+                id="experiences"
+                name="experiences"
+                type="number"
+                className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                {...register("experiences", {
+                  required: "Số lượng Experiences là bắt buộc",
+                })}
+              />
+              {errors.experiences && (
+                <p className="text-red-500 text-xs mt-1">
+                  {errors.experiences.message}
+                </p>
+              )}
+            </div>
+            {/* Gems */}
+            <div className="mb-4">
+              <label
+                className="block text-sm font-medium text-gray-700"
+                htmlFor="gems"
+              >
+                Phần thưởng - Gems
+              </label>
+              <input
+                id="gems"
+                name="gems"
+                type="number"
+                className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                {...register("gems", { required: "Số lượng Gems là bắt buộc" })}
+              />
+              {errors.gems && (
+                <p className="text-red-500 text-xs mt-1">
+                  {errors.gems.message}
+                </p>
+              )}
+            </div>
 
-          {/* Gems */}
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700" htmlFor="gems">
-              Phần thưởng - Gems
-            </label>
-            <input
-              id="gems"
-              name="gems"
-              type="number"
-              className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              {...register("gems", { required: "Số lượng Gems là bắt buộc" })}
-            />
-            {errors.gems && <p className="text-red-500 text-xs mt-1">{errors.gems.message}</p>}
-          </div>
-
-          {/* Add Questions Section */}
-          <h3 className="text-xl font-semibold mb-4">Tạo câu hỏi</h3>
-          <div className="mb-6 flex flex-wrap gap-[2rem]">
-            {questions.map((question, index) => (
-              <div key={question.id} className="mb-4 border p-4 rounded-md bg-gray-50">
-                <div className="mb-2">
-                  <label className="block text-sm font-medium text-gray-700" htmlFor={`questionText-${question.id}`}>
-                    Câu Hỏi {index + 1}
-                  </label>
-                  <input
-                    type="text"
-                    className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    value={question.questionText}
-                    onChange={(e) => handleQuestionChange(question.id, "questionText", e.target.value)}
-                  />
+            {/* Add Questions Section */}
+            <h3 className="text-xl font-semibold mb-4">Tạo câu hỏi</h3>
+            <div className="flex flex-wrap gap-[2rem]">
+              {questions.map((question, index) => (
+                <div
+                  key={index}
+                  className="mb-4 border p-4 rounded-md bg-gray-50 relative"
+                >
+                  <i
+                    onClick={() => handleDeleteFormNewQuestion(index)}
+                    className="fa-sharp fa-solid fa-xmark absolute right-[0.4rem] top-[0rem] text-xl cursor-pointer"
+                  ></i>
+                  <div className="mb-2">
+                    <label
+                      className="block text-sm font-medium text-gray-700"
+                      htmlFor={`questionType-${index}`}
+                    >
+                      Loại Câu Hỏi
+                    </label>
+                    <select
+                      value={question.type}
+                      className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      onChange={(e) =>
+                        handleQuestionChange(index, "type", e.target.value)
+                      }
+                    >
+                      <option value="choose">choose</option>
+                      <option value="fill">fill</option>
+                      <option value="match">match</option>
+                      <option value="rearrange">rearrange</option>
+                    </select>
+                  </div>
+                  {question.type === "choose" ? (
+                    <>
+                      <label className="text-sm font-medium text-gray-700">
+                        Câu hỏi:
+                      </label>{" "}
+                      <br />
+                      <input
+                        className="border-[1px] border-gray-400 outline-none py-[1px] px-[4px] w-full"
+                        value={question.question}
+                        onChange={(e) =>
+                          handleQuestionChange(
+                            index,
+                            "question",
+                            e.target.value
+                          )
+                        }
+                      />{" "}
+                      <br />
+                      <label className="text-sm font-medium text-gray-700">
+                        Các câu trả lời cách nhau bởi dấu phẩy ","
+                      </label>{" "}
+                      <br />
+                      <input
+                        className="border-[1px] border-gray-400 outline-none py-[1px] px-[4px] w-full"
+                        value={question.answers}
+                        onChange={(e) =>
+                          handleQuestionChange(index, "answers", e.target.value)
+                        }
+                      />{" "}
+                      <br />
+                      <label className="text-sm font-medium text-gray-700">
+                        Đáp án là vị trí đáp án đúng bắt đầu từ 0
+                      </label>{" "}
+                      <br />
+                      <input
+                        className="border-[1px] border-gray-400 outline-none py-[1px] px-[4px] w-[3rem]"
+                        type="number"
+                        value={question.correctChoose}
+                        onChange={(e) =>
+                          handleQuestionChange(
+                            index,
+                            "correctChoose",
+                            e.target.value
+                          )
+                        }
+                      />
+                    </>
+                  ) : question.type === "fill" ? (
+                    <>
+                      <label className="text-sm font-medium text-gray-700">
+                        Đoạn văn - hãy đánh dấu vị trí ô trống bằng 10 dấu gạch
+                        dưới "__________":
+                      </label>{" "}
+                      <br />
+                      <input
+                        className="border-[1px] border-gray-400 outline-none py-[1px] px-[4px] w-full"
+                        value={question.document}
+                        onChange={(e) =>
+                          handleQuestionChange(
+                            index,
+                            "document",
+                            e.target.value
+                          )
+                        }
+                      />{" "}
+                      <br />
+                      <label className="text-sm font-medium text-gray-700">
+                        Các từ để điền vào chỗ trống cách nhau bởi dấu phẩy ","
+                      </label>{" "}
+                      <br />
+                      <input
+                        className="border-[1px] border-gray-400 outline-none py-[1px] px-[4px] w-full"
+                        value={question.words}
+                        onChange={(e) =>
+                          handleQuestionChange(index, "words", e.target.value)
+                        }
+                      />
+                      <br />
+                      <label className="text-sm font-medium text-gray-700">
+                        Các từ khi điền đúng sắp xếp theo đúng vị trí điền và
+                        cách nhau bởi dấu phẩy ","
+                      </label>{" "}
+                      <br />
+                      <input
+                        className="border-[1px] border-gray-400 outline-none py-[1px] px-[4px] w-full"
+                        value={question.correctDocument}
+                        onChange={(e) =>
+                          handleQuestionChange(
+                            index,
+                            "correctDocument",
+                            e.target.value
+                          )
+                        }
+                      />
+                    </>
+                  ) : question.type === "match" ? (
+                    <>
+                      <label className="text-sm font-medium text-gray-700">
+                        Các từ bên cột trái cách nhau bởi dấu phẩy ","
+                      </label>{" "}
+                      <br />
+                      <input
+                        className="border-[1px] border-gray-400 outline-none py-[1px] px-[4px] w-full"
+                        value={question.leftOptions}
+                        onChange={(e) =>
+                          handleQuestionChange(
+                            index,
+                            "leftOptions",
+                            e.target.value
+                          )
+                        }
+                      />
+                      <br />
+                      <label className="text-sm font-medium text-gray-700">
+                        Các từ bên cột phải cách nhau bởi dấu phẩy ","
+                      </label>{" "}
+                      <br />
+                      <input
+                        className="border-[1px] border-gray-400 outline-none py-[1px] px-[4px] w-full"
+                        value={question.rightOptions}
+                        onChange={(e) =>
+                          handleQuestionChange(
+                            index,
+                            "rightOptions",
+                            e.target.value
+                          )
+                        }
+                      />
+                      <br />
+                      <label className="text-sm font-medium text-gray-700">
+                        Các cặp từ sau khi nối đúng được viết theo dạng a-b và
+                        cách nhau bởi dấu phẩy ","
+                      </label>{" "}
+                      <br />
+                      <br />
+                      <input
+                        className="border-[1px] border-gray-400 outline-none py-[1px] px-[4px] w-full"
+                        value={question.stringMatches}
+                        onChange={(e) =>
+                          handleQuestionChange(
+                            index,
+                            "stringMatches",
+                            e.target.value
+                          )
+                        }
+                      />
+                    </>
+                  ) : question.type === "rearrange" ? (
+                    <>
+                      <label className="text-sm font-medium text-gray-700">
+                        Câu văn để dịch:
+                      </label>{" "}
+                      <br />
+                      <input
+                        className="border-[1px] border-gray-400 outline-none py-[1px] px-[4px] w-full"
+                        value={question.document}
+                        onChange={(e) =>
+                          handleQuestionChange(
+                            index,
+                            "document",
+                            e.target.value
+                          )
+                        }
+                      />{" "}
+                      <br />
+                      <label className="text-sm font-medium text-gray-700">
+                        Các từ để sắp xếp cách nhau bởi dấu phẩy ","
+                      </label>{" "}
+                      <br />
+                      <input
+                        className="border-[1px] border-gray-400 outline-none py-[1px] px-[4px] w-full"
+                        value={question.words}
+                        onChange={(e) =>
+                          handleQuestionChange(index, "words", e.target.value)
+                        }
+                      />{" "}
+                      <br />
+                      <label className="text-sm font-medium text-gray-700">
+                        Câu sau khi sắp xếp đúng:
+                      </label>{" "}
+                      <br />
+                      <input
+                        className="border-[1px] border-gray-400 outline-none py-[1px] px-[4px] w-full"
+                        value={question.correctDocument}
+                        onChange={(e) =>
+                          handleQuestionChange(
+                            index,
+                            "correctDocument",
+                            e.target.value
+                          )
+                        }
+                      />{" "}
+                    </>
+                  ) : (
+                    ""
+                  )}
                 </div>
-
-                <div className="mb-2">
-                  <label className="block text-sm font-medium text-gray-700" htmlFor={`questionType-${question.id}`}>
-                    Loại Câu Hỏi
-                  </label>
-                  <Controller
-                    name={`questionType-${question.id}`}
-                    control={control}
-                    defaultValue={question.type}
-                    render={({ field }) => (
-                      <select
-                        {...field}
-                        className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                        onChange={(e) => handleQuestionChange(question.id, "type", e.target.value)}
-                      >
-                        <option value="Choose">Choose</option>
-                        <option value="Fill">Fill</option>
-                        <option value="Match">Match</option>
-                        <option value="Rearrange">Rearrange</option>
-                      </select>
-                    )}
-                  />
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
             <button
               type="button"
               onClick={addQuestion}
-              className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+              className="px-4 py-2 mb-4 bg-blue-500 text-white rounded-md hover:bg-blue-600"
             >
               Thêm Câu Hỏi
             </button>
-          </div>
 
-          {/* Submit Button */}
-          <div className="text-center">
-            <button
-              type="submit"
-              className="w-full px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600"
-            >
-              Tạo Bài Học
-            </button>
-          </div>
-        </form>
+            {/* Submit Button */}
+            <div className="text-center">
+              <button
+                type="submit"
+                className="w-full px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600"
+              >
+                Tạo Bài Học
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
-    </div>
+    )
   );
-}
+};
 
 export default LessonForm;
