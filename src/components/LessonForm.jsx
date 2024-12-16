@@ -1,19 +1,44 @@
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
+import instance from "../utils/axiosRequest.js";
 
-import convertStringToArray from "../functions/convertStringToArray.js";
-import convertStringToArrayObjects from "../functions/convertStringToArrayObjects.js";
-const LessonForm = ({ isOpen, setIsOpen, courseId }) => {
+import NotificationPopup from "./NotificationPopup.jsx";
+import { convertStringToArray, convertStringToArrayObjects } from "../functions/convertString.js";
+const LessonForm = ({ isOpen, setIsOpen, setLessons, courseId, sectionId, milestoneId }) => {
+  const [message, setMessage] = useState(false)
+  const [countRequest, setCountRequest] = useState(0)
   const {
     handleSubmit,
     register,
     formState: { errors, isSubmitting },
   } = useForm();
   const [questions, setQuestions] = useState([]);
-  const onSubmit = (data) => {
-    if (data) {
-      console.log(data);
-      console.log(questions);
+  const onSubmit = async(data) => {
+    if (data && questions.length !== 0) {
+      if(countRequest === 1) return
+      setCountRequest(1)
+      try {
+        const resultAddQuestions = await instance.post('admin/questions',{questions})
+        const questionIds = resultAddQuestions.data.data.resultAddQuestions.map(item => {
+          return{
+            question: item._id
+          }
+        })
+        data.questions = questionIds
+        data.sectionId = sectionId
+        data.milestoneId = milestoneId
+        const resultCreateLesson = await instance.post('admin/lessons',{data})
+        setLessons(resultCreateLesson.data.data.lessons)
+        setMessage(resultCreateLesson.data.data.message)
+        setTimeout(() => setIsOpen(false), 1500)
+        setCountRequest(0)
+      } catch (error) {
+        setMessage(error.respones.data.message)
+        setTimeout(() => setIsOpen(false), 1500)
+        setCountRequest(0)
+      }
+    }else{
+      setMessage("Hãy tạo câu hỏi cho bài học!")
     }
   };
 
@@ -23,17 +48,17 @@ const LessonForm = ({ isOpen, setIsOpen, courseId }) => {
       {
         type: "choose",
         courseId,
-        question: "",
+        question: '',
         answers: [],
-        correctChoose: "",
+        correctChoose: 0,
         leftOptions: [],
         rightOptions: [],
         correctMatches: [],
-        stringMatches: "",
-        document: "",
+        stringMatches: '',
+        document: '',
         words: [],
         correctDocument: [],
-        countCorrect: "",
+        countCorrect: 0,
       },
     ]);
   };
@@ -76,7 +101,9 @@ const LessonForm = ({ isOpen, setIsOpen, courseId }) => {
   };
   return (
     isOpen && (
+      
       <div className="w-[70vw] absolute left-1/2 -translate-x-1/2 z-10 mx-auto flex items-center justify-center p-4">
+        <NotificationPopup message={message} setMessage={setMessage}/>
         <div className="bg-white p-6 rounded-lg shadow-lg w-full">
           <i
             onClick={() => setIsOpen(false)}
@@ -87,7 +114,7 @@ const LessonForm = ({ isOpen, setIsOpen, courseId }) => {
           </h2>
           <form onSubmit={handleSubmit(onSubmit)}>
             {/* Lesson Title */}
-            <div className="mb-4">
+            <div className="">
               <label
                 className="block text-sm font-medium text-gray-700"
                 htmlFor="name"
@@ -121,7 +148,7 @@ const LessonForm = ({ isOpen, setIsOpen, courseId }) => {
             </div>
 
             {/* Experiences */}
-            <div className="mb-4">
+            <div className="">
               <label
                 className="block text-sm font-medium text-gray-700"
                 htmlFor="experiences"
@@ -144,7 +171,7 @@ const LessonForm = ({ isOpen, setIsOpen, courseId }) => {
               )}
             </div>
             {/* Gems */}
-            <div className="mb-4">
+            <div className="">
               <label
                 className="block text-sm font-medium text-gray-700"
                 htmlFor="gems"
@@ -171,12 +198,13 @@ const LessonForm = ({ isOpen, setIsOpen, courseId }) => {
               {questions.map((question, index) => (
                 <div
                   key={index}
-                  className="mb-4 border p-4 rounded-md bg-gray-50 relative"
+                  className="min-w-[48.2%] max-w-[48.2%] mb-4 border p-4 rounded-md bg-gray-50 relative"
                 >
                   <i
                     onClick={() => handleDeleteFormNewQuestion(index)}
                     className="fa-sharp fa-solid fa-xmark absolute right-[0.4rem] top-[0rem] text-xl cursor-pointer"
                   ></i>
+                  <p className="font-semibold">Câu số {index + 1}:</p>
                   <div className="mb-2">
                     <label
                       className="block text-sm font-medium text-gray-700"
@@ -331,7 +359,6 @@ const LessonForm = ({ isOpen, setIsOpen, courseId }) => {
                         cách nhau bởi dấu phẩy ","
                       </label>{" "}
                       <br />
-                      <br />
                       <input
                         className="border-[1px] border-gray-400 outline-none py-[1px] px-[4px] w-full"
                         value={question.stringMatches}
@@ -410,7 +437,7 @@ const LessonForm = ({ isOpen, setIsOpen, courseId }) => {
                 type="submit"
                 className="w-full px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600"
               >
-                Tạo Bài Học
+                {isSubmitting ? 'Đang tạo bài học...' : 'Tạo Bài Học'}
               </button>
             </div>
           </form>

@@ -14,7 +14,7 @@ const LessonManage = () => {
   const [isEditLesson, setIsEditLesson] = useState(false);
   const [lesson, setLesson] = useState();
   const [isConfirm, setIsConfirm] = useState(false);
-  const [confirmToDelete, setConfirmToDelete] = useState();
+  const [confirmToDelete, setConfirmToDelete] = useState('');
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const courseId = searchParams.get("courseId");
@@ -153,7 +153,7 @@ const LessonManage = () => {
         </div>
       )}
       <NotificationPopup message={message} setMessage={setMessage} />
-      <LessonForm isOpen={isOpen} setIsOpen={setIsOpen} courseId={courseId} />
+      <LessonForm isOpen={isOpen} setIsOpen={setIsOpen} setLessons={setLessons} courseId={courseId} sectionId={sectionId} milestoneId={milestoneId} />
       <LessonEditForm
         isEditLesson={isEditLesson}
         setIsEditLesson={setIsEditLesson}
