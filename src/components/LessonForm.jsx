@@ -7,12 +7,12 @@ import { convertStringToArray, convertStringToArrayObjects } from "../functions/
 const LessonForm = ({ isOpen, setIsOpen, setLessons, courseId, sectionId, milestoneId }) => {
   const [message, setMessage] = useState(false)
   const [countRequest, setCountRequest] = useState(0)
+  const [questions, setQuestions] = useState([]);
   const {
     handleSubmit,
     register,
     formState: { errors, isSubmitting },
-  } = useForm();
-  const [questions, setQuestions] = useState([]);
+  } = useForm()
   const onSubmit = async(data) => {
     if (data && questions.length !== 0) {
       if(countRequest === 1) return
@@ -28,9 +28,10 @@ const LessonForm = ({ isOpen, setIsOpen, setLessons, courseId, sectionId, milest
         data.sectionId = sectionId
         data.milestoneId = milestoneId
         const resultCreateLesson = await instance.post('admin/lessons',{data})
-        setLessons(resultCreateLesson.data.data.lessons)
         setMessage(resultCreateLesson.data.data.message)
-        setTimeout(() => setIsOpen(false), 1500)
+        setLessons(resultCreateLesson.data.data.lessons)
+        setTimeout(() => setIsOpen(false), 1000)
+        setQuestions([])
         setCountRequest(0)
       } catch (error) {
         setMessage(error.respones.data.message)
@@ -193,12 +194,12 @@ const LessonForm = ({ isOpen, setIsOpen, setLessons, courseId, sectionId, milest
             </div>
 
             {/* Add Questions Section */}
-            <h3 className="text-xl font-semibold mb-4">Tạo câu hỏi</h3>
+            <h3 className="mt-4 text-xl font-semibold mb-4">Tạo câu hỏi:</h3>
             <div className="flex flex-wrap gap-[2rem]">
               {questions.map((question, index) => (
                 <div
                   key={index}
-                  className="min-w-[48.2%] max-w-[48.2%] mb-4 border p-4 rounded-md bg-gray-50 relative"
+                  className="min-w-[48.2%] max-w-[48.2%] border mb-2 p-4 rounded-md bg-gray-50 relative"
                 >
                   <i
                     onClick={() => handleDeleteFormNewQuestion(index)}
@@ -231,7 +232,7 @@ const LessonForm = ({ isOpen, setIsOpen, setLessons, courseId, sectionId, milest
                         Câu hỏi:
                       </label>{" "}
                       <br />
-                      <input
+                      <textarea
                         className="border-[1px] border-gray-400 outline-none py-[1px] px-[4px] w-full"
                         value={question.question}
                         onChange={(e) =>
@@ -247,7 +248,7 @@ const LessonForm = ({ isOpen, setIsOpen, setLessons, courseId, sectionId, milest
                         Các câu trả lời cách nhau bởi dấu phẩy ","
                       </label>{" "}
                       <br />
-                      <input
+                      <textarea
                         className="border-[1px] border-gray-400 outline-none py-[1px] px-[4px] w-full"
                         value={question.answers}
                         onChange={(e) =>
@@ -259,7 +260,7 @@ const LessonForm = ({ isOpen, setIsOpen, setLessons, courseId, sectionId, milest
                         Đáp án là vị trí đáp án đúng bắt đầu từ 0
                       </label>{" "}
                       <br />
-                      <input
+                      <textarea
                         className="border-[1px] border-gray-400 outline-none py-[1px] px-[4px] w-[3rem]"
                         type="number"
                         value={question.correctChoose}
@@ -279,7 +280,7 @@ const LessonForm = ({ isOpen, setIsOpen, setLessons, courseId, sectionId, milest
                         dưới "__________":
                       </label>{" "}
                       <br />
-                      <input
+                      <textarea
                         className="border-[1px] border-gray-400 outline-none py-[1px] px-[4px] w-full"
                         value={question.document}
                         onChange={(e) =>
@@ -295,7 +296,7 @@ const LessonForm = ({ isOpen, setIsOpen, setLessons, courseId, sectionId, milest
                         Các từ để điền vào chỗ trống cách nhau bởi dấu phẩy ","
                       </label>{" "}
                       <br />
-                      <input
+                      <textarea
                         className="border-[1px] border-gray-400 outline-none py-[1px] px-[4px] w-full"
                         value={question.words}
                         onChange={(e) =>
@@ -308,7 +309,7 @@ const LessonForm = ({ isOpen, setIsOpen, setLessons, courseId, sectionId, milest
                         cách nhau bởi dấu phẩy ","
                       </label>{" "}
                       <br />
-                      <input
+                      <textarea
                         className="border-[1px] border-gray-400 outline-none py-[1px] px-[4px] w-full"
                         value={question.correctDocument}
                         onChange={(e) =>
@@ -326,7 +327,7 @@ const LessonForm = ({ isOpen, setIsOpen, setLessons, courseId, sectionId, milest
                         Các từ bên cột trái cách nhau bởi dấu phẩy ","
                       </label>{" "}
                       <br />
-                      <input
+                      <textarea
                         className="border-[1px] border-gray-400 outline-none py-[1px] px-[4px] w-full"
                         value={question.leftOptions}
                         onChange={(e) =>
@@ -342,7 +343,7 @@ const LessonForm = ({ isOpen, setIsOpen, setLessons, courseId, sectionId, milest
                         Các từ bên cột phải cách nhau bởi dấu phẩy ","
                       </label>{" "}
                       <br />
-                      <input
+                      <textarea
                         className="border-[1px] border-gray-400 outline-none py-[1px] px-[4px] w-full"
                         value={question.rightOptions}
                         onChange={(e) =>
@@ -359,7 +360,7 @@ const LessonForm = ({ isOpen, setIsOpen, setLessons, courseId, sectionId, milest
                         cách nhau bởi dấu phẩy ","
                       </label>{" "}
                       <br />
-                      <input
+                      <textarea
                         className="border-[1px] border-gray-400 outline-none py-[1px] px-[4px] w-full"
                         value={question.stringMatches}
                         onChange={(e) =>
@@ -377,7 +378,7 @@ const LessonForm = ({ isOpen, setIsOpen, setLessons, courseId, sectionId, milest
                         Câu văn để dịch:
                       </label>{" "}
                       <br />
-                      <input
+                      <textarea
                         className="border-[1px] border-gray-400 outline-none py-[1px] px-[4px] w-full"
                         value={question.document}
                         onChange={(e) =>
@@ -393,7 +394,7 @@ const LessonForm = ({ isOpen, setIsOpen, setLessons, courseId, sectionId, milest
                         Các từ để sắp xếp cách nhau bởi dấu phẩy ","
                       </label>{" "}
                       <br />
-                      <input
+                      <textarea
                         className="border-[1px] border-gray-400 outline-none py-[1px] px-[4px] w-full"
                         value={question.words}
                         onChange={(e) =>
@@ -405,7 +406,7 @@ const LessonForm = ({ isOpen, setIsOpen, setLessons, courseId, sectionId, milest
                         Câu sau khi sắp xếp đúng:
                       </label>{" "}
                       <br />
-                      <input
+                      <textarea
                         className="border-[1px] border-gray-400 outline-none py-[1px] px-[4px] w-full"
                         value={question.correctDocument}
                         onChange={(e) =>

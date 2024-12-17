@@ -13,3 +13,18 @@ export const convertStringToArrayObjects = (str) => {
     } )
     return convertToArrayObject
 }
+export const covertArrayToString = (arr) => {
+    let str = ''
+    for(let i = 0; i < arr.length; i++){
+        if(i === arr.length - 1){
+            str += arr[i]
+            return str
+        }
+        str += arr[i] + ',' 
+    }
+    return str
+}
+export const convertArrayObjectsToString = (arr) => {
+    const str = arr && arr.map((item) => item.left+'-'+item.right).join(',')
+    return str
+}

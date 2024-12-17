@@ -18,7 +18,7 @@ const Login = () => {
     register,
     handleSubmit,
     setFocus,
-    formState: { errors, isSubmitting },
+    formState: { errors, isSubmitting, isDirty },
   } = useForm();
   useEffect(() => {
     setFocus("email");

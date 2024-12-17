@@ -13,11 +13,6 @@ const LessonEditForm = ({
 }) => {
   const [countRequest, setCountRequest] = useState(0);
   const [message, setMessage] = useState();
-  const [newLesson, setNewLesson] = useState({
-    name: lesson?.name,
-    experiences: lesson?.experiences,
-    gems: lesson?.gems,
-  });
   const {
     register,
     handleSubmit,
@@ -84,7 +79,6 @@ const LessonEditForm = ({
                     message: "Tên không thể dài quá 255 ký tự",
                   },
                 })}
-                value={newLesson.name}
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
               {errors.name && (
@@ -102,7 +96,6 @@ const LessonEditForm = ({
                     message: "Chỉ được nhập số nguyên dương",
                   },
                 })}
-                value={newLesson.experiences}
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
               {errors.experiences && (
@@ -122,7 +115,6 @@ const LessonEditForm = ({
                     message: "Chỉ được nhập số nguyên dương",
                   },
                 })}
-                value={newLesson.gems}
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
               {errors.gems && (

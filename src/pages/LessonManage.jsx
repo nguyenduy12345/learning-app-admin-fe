@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import LessonForm from "../components/LessonForm.jsx";
 import LessonEditForm from "../components/LessonEditForm.jsx";
-
+import QuestionEditForm from "../components/QuestionEditForm.jsx";
 import NotificationPopup from "../components/NotificationPopup.jsx";
 
 import instance from "../utils/axiosRequest.js";
@@ -13,6 +13,7 @@ const LessonManage = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isEditLesson, setIsEditLesson] = useState(false);
   const [lesson, setLesson] = useState();
+  const [question, setQuestion] = useState()
   const [isConfirm, setIsConfirm] = useState(false);
   const [confirmToDelete, setConfirmToDelete] = useState('');
   const navigate = useNavigate();
@@ -161,6 +162,7 @@ const LessonManage = () => {
         setLessons={setLessons}
         lesson={lesson}
       />
+      <QuestionEditForm question={question} setQuestion={setQuestion} lessons={lessons} setLessons={setLessons} />
       <div className="container mx-auto mt-6">
         <div className="w-[98%] mb-[0.5rem] flex justify-between mx-auto">
           <ul className="flex gap-2">
@@ -340,15 +342,13 @@ const LessonManage = () => {
                                   </li>
                                 ))}
                               </ul>
-                              <ul className="flex gap-[3px] font-semibold">
+                              <ul className="flex gap-[3px] font-semibold flex-wrap">
                                 <li>Các từ sau khi ghép đúng: </li>
                                 {lesson.questions[
                                   index
                                 ].question.correctMatches.map((word, i) => (
                                   <li className="font-semibold" key={i}>
-                                    <p>
-                                      {word.left} - {word.right} |{" "}
-                                    </p>
+                                      {word.left} - {word.right}
                                   </li>
                                 ))}
                               </ul>
@@ -379,7 +379,9 @@ const LessonManage = () => {
                             </div>
                           )}
                           <div className="space-x-2 mt-[0.7rem]">
-                            <button className="bg-blue-500 text-white px-3 py-1 rounded-lg">
+                            <button 
+                              onClick={() => setQuestion({question: lesson.questions[index].question, index, lessonIndex})}
+                              className="bg-blue-500 text-white px-3 py-1 rounded-lg">
                               Sửa
                             </button>
                             <button 
