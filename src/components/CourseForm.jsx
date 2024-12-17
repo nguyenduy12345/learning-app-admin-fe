@@ -26,8 +26,8 @@ const CourseForm = ({ isOpen, setIsOpen, setCourses}) => {
             "Content-Type": `multipart/form-data`,
           },
         });
-        setCourses(result && result.data.data.courses);
-        setMessage(result && result.data.message)
+        setCourses(result.data.data.courses);
+        setMessage(result.data.message)
         setIsOpen(false)
       } catch (error) {
         setMessage(error.response.data.message)

@@ -34,7 +34,7 @@ const SectionManage = () => {
   }
    const handleDeleteSection = async () => {
       if (countRequest === 1) return;
-      setCountRequest(0);
+      setCountRequest(1);
       if(confirmToDelete === section.name){
         try {
           const result = await instance.patch(`admin/sections/${section._id}?deleted=true`);

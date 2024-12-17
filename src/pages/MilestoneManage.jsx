@@ -36,7 +36,7 @@ const MilestoneManage = () => {
     }
      const handleDeleteMilestone = async () => {
         if (countRequest === 1) return;
-        setCountRequest(0);
+        setCountRequest(1);
         if(confirmToDelete === milestone.name){
           try {
             const result = await instance.patch(`admin/milestones/${milestone._id}?deleted=true`);

@@ -3,22 +3,44 @@ import { useForm } from "react-hook-form";
 import instance from "../utils/axiosRequest.js";
 
 import NotificationPopup from "./NotificationPopup.jsx";
-import { convertStringToArray, convertStringToArrayObjects } from "../functions/convertString.js";
-const LessonForm = ({ isOpen, setIsOpen, setLessons, courseId, sectionId, milestoneId }) => {
-  const [message, setMessage] = useState(false)
-  const [countRequest, setCountRequest] = useState(0)
+import {
+  convertStringToArray,
+  convertStringToArrayObjects,
+} from "../functions/convertString.js";
+const LessonForm = ({
+  isOpen,
+  setIsOpen,
+  setLessons,
+  courseId,
+  sectionId,
+  milestoneId,
+}) => {
+  const [message, setMessage] = useState(false);
+  const [countRequest, setCountRequest] = useState(0);
   const [questions, setQuestions] = useState([]);
   const {
     handleSubmit,
     register,
     formState: { errors, isSubmitting },
-  } = useForm()
-  const onSubmit = async(data) => {
+  } = useForm();
+  const onSubmit = async (data) => {
     if (data && questions.length !== 0) {
-      if(countRequest === 1) return
-      setCountRequest(1)
+      const formatQuestions = questions.map((question) => {
+        return {
+          ...question,
+          answers: convertStringToArray(question.answers),
+          words: convertStringToArray(question.words),
+          leftOptions: convertStringToArray(question.leftOptions),
+          rightOptions: convertStringToArray(question.rightOptions),
+          correctDocument: convertStringToArray(question.correctDocument),
+          correctMatches: convertStringToArrayObjects(question.correctMatches),
+          countCorrect: convertStringToArray(question.correctDocument).length,
+        };
+      });
+      if (countRequest === 1) return;
+      setCountRequest(1);
       try {
-        const resultAddQuestions = await instance.post('admin/questions',{questions})
+        const resultAddQuestions = await instance.post('admin/questions',{questions: formatQuestions})
         const questionIds = resultAddQuestions.data.data.resultAddQuestions.map(item => {
           return{
             question: item._id
@@ -32,31 +54,29 @@ const LessonForm = ({ isOpen, setIsOpen, setLessons, courseId, sectionId, milest
         setLessons(resultCreateLesson.data.data.lessons)
         setTimeout(() => setIsOpen(false), 1000)
         setQuestions([])
-        setCountRequest(0)
+        setCountRequest(0);
       } catch (error) {
-        setMessage(error.respones.data.message)
-        setTimeout(() => setIsOpen(false), 1500)
-        setCountRequest(0)
+        setMessage(error.response.data.message);
+        setCountRequest(0);
       }
-    }else{
-      setMessage("Hãy tạo câu hỏi cho bài học!")
+    } else {
+      setMessage("Hãy tạo câu hỏi cho bài học!");
+      setCountRequest(0);
     }
   };
-
   const addQuestion = () => {
     setQuestions([
       ...questions,
       {
         type: "choose",
         courseId,
-        question: '',
+        question: "",
         answers: [],
         correctChoose: 0,
         leftOptions: [],
         rightOptions: [],
         correctMatches: [],
-        stringMatches: '',
-        document: '',
+        document: "",
         words: [],
         correctDocument: [],
         countCorrect: 0,
@@ -67,32 +87,7 @@ const LessonForm = ({ isOpen, setIsOpen, setLessons, courseId, sectionId, milest
   const handleQuestionChange = (index, field, value) => {
     setQuestions((prevQuestions) => {
       const currentQuestions = [...prevQuestions];
-      switch (field) {
-        case "answers":
-        case "leftOptions":
-        case "rightOptions":
-        case "words":
-        case "correctDocument":
-          currentQuestions[index] = {
-            ...currentQuestions[index],
-            [field]: convertStringToArray(value),
-          };
-          break;
-        default:
-          currentQuestions[index][field] = value;
-      }
-      if (currentQuestions[index].type === "fill") {
-        currentQuestions[index]["countCorrect"] =
-          currentQuestions[index]["correctDocument"].length;
-      }
-      if (currentQuestions[index].type === "match") {
-        currentQuestions[index] = {
-          ...currentQuestions[index],
-          correctMatches: convertStringToArrayObjects(
-            currentQuestions[index].stringMatches
-          ),
-        };
-      }
+      currentQuestions[index][field] = value;
       return currentQuestions;
     });
   };
@@ -102,9 +97,8 @@ const LessonForm = ({ isOpen, setIsOpen, setLessons, courseId, sectionId, milest
   };
   return (
     isOpen && (
-      
-      <div className="w-[70vw] absolute left-1/2 -translate-x-1/2 z-10 mx-auto flex items-center justify-center p-4">
-        <NotificationPopup message={message} setMessage={setMessage}/>
+      <div className="w-[90vw] absolute left-1/2 -translate-x-1/2 z-10 mx-auto flex items-center justify-center p-4">
+        <NotificationPopup message={message} setMessage={setMessage} />
         <div className="bg-white p-6 rounded-lg shadow-lg w-full">
           <i
             onClick={() => setIsOpen(false)}
@@ -233,7 +227,7 @@ const LessonForm = ({ isOpen, setIsOpen, setLessons, courseId, sectionId, milest
                       </label>{" "}
                       <br />
                       <textarea
-                        className="border-[1px] border-gray-400 outline-none py-[1px] px-[4px] w-full"
+                        className="border-[1px] border-gray-400 outline-none py-[1px] px-[4px] w-full min-h-[7rem]"
                         value={question.question}
                         onChange={(e) =>
                           handleQuestionChange(
@@ -245,11 +239,11 @@ const LessonForm = ({ isOpen, setIsOpen, setLessons, courseId, sectionId, milest
                       />{" "}
                       <br />
                       <label className="text-sm font-medium text-gray-700">
-                        Các câu trả lời cách nhau bởi dấu phẩy ","
+                        Các câu trả lời cách nhau bằng phím Enter
                       </label>{" "}
                       <br />
                       <textarea
-                        className="border-[1px] border-gray-400 outline-none py-[1px] px-[4px] w-full"
+                        className="border-[1px] border-gray-400 outline-none py-[1px] px-[4px] w-full min-h-[7rem]"
                         value={question.answers}
                         onChange={(e) =>
                           handleQuestionChange(index, "answers", e.target.value)
@@ -281,7 +275,7 @@ const LessonForm = ({ isOpen, setIsOpen, setLessons, courseId, sectionId, milest
                       </label>{" "}
                       <br />
                       <textarea
-                        className="border-[1px] border-gray-400 outline-none py-[1px] px-[4px] w-full"
+                        className="border-[1px] border-gray-400 outline-none py-[1px] px-[4px] w-full min-h-[7rem]"
                         value={question.document}
                         onChange={(e) =>
                           handleQuestionChange(
@@ -293,11 +287,11 @@ const LessonForm = ({ isOpen, setIsOpen, setLessons, courseId, sectionId, milest
                       />{" "}
                       <br />
                       <label className="text-sm font-medium text-gray-700">
-                        Các từ để điền vào chỗ trống cách nhau bởi dấu phẩy ","
+                        Các từ để điền vào chỗ trống cách nhau bằng phím Enter
                       </label>{" "}
                       <br />
                       <textarea
-                        className="border-[1px] border-gray-400 outline-none py-[1px] px-[4px] w-full"
+                        className="border-[1px] border-gray-400 outline-none py-[1px] px-[4px] w-full min-h-[7rem]"
                         value={question.words}
                         onChange={(e) =>
                           handleQuestionChange(index, "words", e.target.value)
@@ -306,11 +300,11 @@ const LessonForm = ({ isOpen, setIsOpen, setLessons, courseId, sectionId, milest
                       <br />
                       <label className="text-sm font-medium text-gray-700">
                         Các từ khi điền đúng sắp xếp theo đúng vị trí điền và
-                        cách nhau bởi dấu phẩy ","
+                        cách nhau bằng phím Enter
                       </label>{" "}
                       <br />
                       <textarea
-                        className="border-[1px] border-gray-400 outline-none py-[1px] px-[4px] w-full"
+                        className="border-[1px] border-gray-400 outline-none py-[1px] px-[4px] w-full min-h-[7rem]"
                         value={question.correctDocument}
                         onChange={(e) =>
                           handleQuestionChange(
@@ -324,11 +318,11 @@ const LessonForm = ({ isOpen, setIsOpen, setLessons, courseId, sectionId, milest
                   ) : question.type === "match" ? (
                     <>
                       <label className="text-sm font-medium text-gray-700">
-                        Các từ bên cột trái cách nhau bởi dấu phẩy ","
+                        Các từ bên cột trái cách nhau bằng phím Enter
                       </label>{" "}
                       <br />
                       <textarea
-                        className="border-[1px] border-gray-400 outline-none py-[1px] px-[4px] w-full"
+                        className="border-[1px] border-gray-400 outline-none py-[1px] px-[4px] w-full min-h-[7rem]"
                         value={question.leftOptions}
                         onChange={(e) =>
                           handleQuestionChange(
@@ -340,11 +334,11 @@ const LessonForm = ({ isOpen, setIsOpen, setLessons, courseId, sectionId, milest
                       />
                       <br />
                       <label className="text-sm font-medium text-gray-700">
-                        Các từ bên cột phải cách nhau bởi dấu phẩy ","
+                        Các từ bên cột phải cách nhau bằng phím Enter
                       </label>{" "}
                       <br />
                       <textarea
-                        className="border-[1px] border-gray-400 outline-none py-[1px] px-[4px] w-full"
+                        className="border-[1px] border-gray-400 outline-none py-[1px] px-[4px] w-full min-h-[7rem]"
                         value={question.rightOptions}
                         onChange={(e) =>
                           handleQuestionChange(
@@ -357,16 +351,16 @@ const LessonForm = ({ isOpen, setIsOpen, setLessons, courseId, sectionId, milest
                       <br />
                       <label className="text-sm font-medium text-gray-700">
                         Các cặp từ sau khi nối đúng được viết theo dạng a-b và
-                        cách nhau bởi dấu phẩy ","
+                        cách nhau bằng phím Enter
                       </label>{" "}
                       <br />
                       <textarea
-                        className="border-[1px] border-gray-400 outline-none py-[1px] px-[4px] w-full"
-                        value={question.stringMatches}
+                        className="border-[1px] border-gray-400 outline-none py-[1px] px-[4px] w-full min-h-[7rem]"
+                        value={question.correctMatches}
                         onChange={(e) =>
                           handleQuestionChange(
                             index,
-                            "stringMatches",
+                            "correctMatches",
                             e.target.value
                           )
                         }
@@ -379,7 +373,7 @@ const LessonForm = ({ isOpen, setIsOpen, setLessons, courseId, sectionId, milest
                       </label>{" "}
                       <br />
                       <textarea
-                        className="border-[1px] border-gray-400 outline-none py-[1px] px-[4px] w-full"
+                        className="border-[1px] border-gray-400 outline-none py-[1px] px-[4px] w-full min-h-[7rem]"
                         value={question.document}
                         onChange={(e) =>
                           handleQuestionChange(
@@ -391,11 +385,11 @@ const LessonForm = ({ isOpen, setIsOpen, setLessons, courseId, sectionId, milest
                       />{" "}
                       <br />
                       <label className="text-sm font-medium text-gray-700">
-                        Các từ để sắp xếp cách nhau bởi dấu phẩy ","
+                        Các từ để sắp xếp cách nhau bằng phím Enter
                       </label>{" "}
                       <br />
                       <textarea
-                        className="border-[1px] border-gray-400 outline-none py-[1px] px-[4px] w-full"
+                        className="border-[1px] border-gray-400 outline-none py-[1px] px-[4px] w-full min-h-[7rem]"
                         value={question.words}
                         onChange={(e) =>
                           handleQuestionChange(index, "words", e.target.value)
@@ -407,7 +401,7 @@ const LessonForm = ({ isOpen, setIsOpen, setLessons, courseId, sectionId, milest
                       </label>{" "}
                       <br />
                       <textarea
-                        className="border-[1px] border-gray-400 outline-none py-[1px] px-[4px] w-full"
+                        className="border-[1px] border-gray-400 outline-none py-[1px] px-[4px] w-full min-h-[7rem]"
                         value={question.correctDocument}
                         onChange={(e) =>
                           handleQuestionChange(
@@ -438,7 +432,7 @@ const LessonForm = ({ isOpen, setIsOpen, setLessons, courseId, sectionId, milest
                 type="submit"
                 className="w-full px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600"
               >
-                {isSubmitting ? 'Đang tạo bài học...' : 'Tạo Bài Học'}
+                {isSubmitting ? "Đang tạo bài học..." : "Tạo Bài Học"}
               </button>
             </div>
           </form>

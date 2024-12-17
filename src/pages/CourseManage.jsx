@@ -34,7 +34,7 @@ const CourseManage = () => {
   }
   const handleHiddenCourse = async () => {
     if (countRequest === 1) return;
-    setCountRequest(0);
+    setCountRequest(1);
     if(confirmToDelete === course.name){
       try {
         const result = await instance.patch(`admin/courses/${course._id}?deleted=true`);

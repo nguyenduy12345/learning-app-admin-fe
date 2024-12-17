@@ -4,6 +4,7 @@ import LessonForm from "../components/LessonForm.jsx";
 import LessonEditForm from "../components/LessonEditForm.jsx";
 import QuestionEditForm from "../components/QuestionEditForm.jsx";
 import NotificationPopup from "../components/NotificationPopup.jsx";
+import { convertArrayObjectsToString } from "../functions/convertString.js";
 
 import instance from "../utils/axiosRequest.js";
 const LessonManage = () => {
@@ -13,9 +14,9 @@ const LessonManage = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isEditLesson, setIsEditLesson] = useState(false);
   const [lesson, setLesson] = useState();
-  const [question, setQuestion] = useState()
+  const [question, setQuestion] = useState();
   const [isConfirm, setIsConfirm] = useState(false);
-  const [confirmToDelete, setConfirmToDelete] = useState('');
+  const [confirmToDelete, setConfirmToDelete] = useState("");
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const courseId = searchParams.get("courseId");
@@ -72,7 +73,7 @@ const LessonManage = () => {
   };
   const handleDeleteLesson = async () => {
     if (countRequest === 1) return;
-    setCountRequest(0);
+    setCountRequest(1);
     if (confirmToDelete === lesson.name) {
       try {
         const result = await instance.patch(
@@ -99,12 +100,10 @@ const LessonManage = () => {
       setMessage("Nhập sai tên, vui lòng nhập lại!");
     }
   };
-  const handleDeleteQuestion = async(id, index, lessonIndex, lessonId) => {
+  const handleDeleteQuestion = async (id, index, lessonIndex, lessonId) => {
     if (confirm("Bạn có muốn xóa câu hỏi?")) {
       try {
-        await instance.patch(
-          `admin/questions/delete/${id}`
-        );
+        await instance.patch(`admin/questions/delete/${id}`);
         const result = await instance.patch(
           `admin/lessons/delete_question/${lessonId}?index=${index}`
         );
@@ -119,7 +118,7 @@ const LessonManage = () => {
         setCountRequest(0);
       }
     }
-  }
+  };
   return (
     <>
       {isConfirm && (
@@ -154,15 +153,30 @@ const LessonManage = () => {
         </div>
       )}
       <NotificationPopup message={message} setMessage={setMessage} />
-      <LessonForm isOpen={isOpen} setIsOpen={setIsOpen} setLessons={setLessons} courseId={courseId} sectionId={sectionId} milestoneId={milestoneId} />
+      <LessonForm
+        isOpen={isOpen}
+        setIsOpen={setIsOpen}
+        setLessons={setLessons}
+        courseId={courseId}
+        sectionId={sectionId}
+        milestoneId={milestoneId}
+      />
       <LessonEditForm
         isEditLesson={isEditLesson}
         setIsEditLesson={setIsEditLesson}
         lessons={lessons}
         setLessons={setLessons}
         lesson={lesson}
+        courseId={courseId}
+        sectionId={sectionId}
+        milestoneId={milestoneId}
       />
-      <QuestionEditForm question={question} setQuestion={setQuestion} lessons={lessons} setLessons={setLessons} />
+      <QuestionEditForm
+        question={question}
+        setQuestion={setQuestion}
+        lessons={lessons}
+        setLessons={setLessons}
+      />
       <div className="container mx-auto mt-6">
         <div className="w-[98%] mb-[0.5rem] flex justify-between mx-auto">
           <ul className="flex gap-2">
@@ -208,7 +222,7 @@ const LessonManage = () => {
                 <div
                   key={lesson._id}
                   className={`bg-white shadow-lg rounded-lg p-4 space-y-4 transition-all relative pb-[2rem] ${
-                    lesson.show ? "" : "h-[8.8rem] overflow-hidden"
+                    lesson.show ? "" : "h-[11rem] overflow-hidden"
                   } `}
                 >
                   <button
@@ -229,6 +243,7 @@ const LessonManage = () => {
                       <p className="text-gray-600 font-semibold ml-2">
                         Tiền xu: {lesson.gems}
                       </p>
+                      <h4 className="font-semibold text-lg">Số câu hỏi trong bài: {lesson?.questions.length}</h4>
                     </div>
                     <div className="space-x-2">
                       <button
@@ -256,6 +271,7 @@ const LessonManage = () => {
                           className="bg-white p-4 rounded-lg shadow mb-4"
                         >
                           <div className="mb-2">
+                            <p className="font-semibold text-lg">Câu số: {index + 1}</p>
                             <strong className="text-sm text-gray-700">
                               Loại câu hỏi:{" "}
                             </strong>
@@ -281,15 +297,15 @@ const LessonManage = () => {
                                   )
                                 )}
                               </ul>
-                              <p className="font-semibold">
-                                Câu trả lời đúng :{" "}
+                              <span>Câu trả lời đúng : </span>
+                              <span className="font-semibold">
                                 {
                                   lesson.questions[index].question.answers[
                                     +lesson.questions[index].question
                                       .correctChoose
                                   ]
                                 }
-                              </p>
+                              </span>
                             </div>
                           ) : lesson.questions[index].question.type ===
                             "fill" ? (
@@ -342,15 +358,16 @@ const LessonManage = () => {
                                   </li>
                                 ))}
                               </ul>
-                              <ul className="flex gap-[3px] font-semibold flex-wrap">
+                              <ul className="flex gap-[3px] flex-wrap">
                                 <li>Các từ sau khi ghép đúng: </li>
-                                {lesson.questions[
-                                  index
-                                ].question.correctMatches.map((word, i) => (
-                                  <li className="font-semibold" key={i}>
-                                      {word.left} - {word.right}
-                                  </li>
-                                ))}
+                                <textarea
+                                  className="min-h-[7rem] w-[18rem] font-semibold"
+                                  value={convertArrayObjectsToString(
+                                    lesson.questions[index].question
+                                      .correctMatches
+                                  )}
+                                  readOnly
+                                />
                               </ul>
                             </div>
                           ) : (
@@ -369,8 +386,8 @@ const LessonManage = () => {
                                   )
                                 )}
                               </ul>
+                              <span>Câu sau khi sắp xếp đúng: </span>
                               <span className="font-semibold">
-                                Câu sau khi sắp xếp đúng:{" "}
                                 {
                                   lesson.questions[index].question
                                     .correctDocument
@@ -379,14 +396,29 @@ const LessonManage = () => {
                             </div>
                           )}
                           <div className="space-x-2 mt-[0.7rem]">
-                            <button 
-                              onClick={() => setQuestion({question: lesson.questions[index].question, index, lessonIndex})}
-                              className="bg-blue-500 text-white px-3 py-1 rounded-lg">
+                            <button
+                              onClick={() =>
+                                setQuestion({
+                                  question: lesson.questions[index].question,
+                                  index,
+                                  lessonIndex,
+                                })
+                              }
+                              className="bg-blue-500 text-white px-3 py-1 rounded-lg"
+                            >
                               Sửa
                             </button>
-                            <button 
-                              onClick={() => handleDeleteQuestion(question.question._id, index, lessonIndex, lesson._id)}
-                              className="bg-red-500 text-white px-3 py-1 rounded-lg">
+                            <button
+                              onClick={() =>
+                                handleDeleteQuestion(
+                                  question.question._id,
+                                  index,
+                                  lessonIndex,
+                                  lesson._id
+                                )
+                              }
+                              className="bg-red-500 text-white px-3 py-1 rounded-lg"
+                            >
                               Xóa
                             </button>
                           </div>

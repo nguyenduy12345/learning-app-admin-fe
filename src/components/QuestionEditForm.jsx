@@ -157,7 +157,7 @@ const QuestionEditForm = ({ question, setQuestion, setLessons }) => {
                   id="question"
                   name="question"
                   type="text"
-                  className="border-[1px] border-gray-400 outline-none py-[1px] px-[4px] w-full"
+                  className="border-[1px] border-gray-400 outline-none py-[1px] px-[4px] w-full min-h-[7rem]"
                   {...register("question", {
                     required: "Không được bỏ trống",
                   })}
@@ -169,14 +169,14 @@ const QuestionEditForm = ({ question, setQuestion, setLessons }) => {
                 )}
                 <br />
                 <label className="text-sm font-medium text-gray-700">
-                  Các câu trả lời cách nhau bởi dấu phẩy ","
+                  Các câu trả lời cách nhau bởi phím Enter
                 </label>{" "}
                 <br />
                 <textarea
                   id="answers"
                   name="answers"
                   type="text"
-                  className="border-[1px] border-gray-400 outline-none py-[1px] px-[4px] w-full"
+                  className="border-[1px] border-gray-400 outline-none py-[1px] px-[4px] w-full min-h-[7rem]"
                   {...register("answers", {
                     required: "Không được bỏ trống",
                   })}
@@ -195,7 +195,7 @@ const QuestionEditForm = ({ question, setQuestion, setLessons }) => {
                   id="correctChoose"
                   name="correctChoose"
                   type="text"
-                  className="border-[1px] border-gray-400 outline-none py-[1px] px-[4px] w-full"
+                  className="border-[1px] border-gray-400 outline-none py-[1px] px-[4px] w-full min-h-[7rem]"
                   {...register("correctChoose", {
                     required: "Không được bỏ trống",
                   })}
@@ -217,7 +217,7 @@ const QuestionEditForm = ({ question, setQuestion, setLessons }) => {
                   id="document"
                   name="document"
                   type="text"
-                  className="border-[1px] border-gray-400 outline-none py-[1px] px-[4px] w-full min-h-full"
+                  className="border-[1px] border-gray-400 outline-none py-[1px] px-[4px] w-full min-h-[7rem]"
                   {...register("document", {
                     required: "Không được bỏ trống",
                   })}
@@ -229,14 +229,14 @@ const QuestionEditForm = ({ question, setQuestion, setLessons }) => {
                 )}
                 <br />
                 <label className="text-sm font-medium text-gray-700">
-                  Các từ để điền vào chỗ trống cách nhau bởi dấu phẩy ","
+                  Các từ để điền vào chỗ trống cách nhau bởi phím Enter
                 </label>{" "}
                 <br />
                 <textarea
                   id="words"
                   name="words"
                   type="text"
-                  className="border-[1px] border-gray-400 outline-none py-[1px] px-[4px] w-full"
+                  className="border-[1px] border-gray-400 outline-none py-[1px] px-[4px] w-full min-h-[7rem]"
                   {...register("words", {
                     required: "Không được bỏ trống",
                   })}
@@ -248,15 +248,14 @@ const QuestionEditForm = ({ question, setQuestion, setLessons }) => {
                 )}
                 <br />
                 <label className="text-sm font-medium text-gray-700">
-                  Các từ khi điền đúng sắp xếp theo đúng vị trí điền và cách
-                  nhau bởi dấu phẩy ","
+                  Các từ khi điền đúng sắp xếp theo đúng vị trí điền và cách nhau bởi phím Enter
                 </label>{" "}
                 <br />
                 <textarea
                   id="correctDocument"
                   name="correctDocument"
                   type="text"
-                  className="border-[1px] border-gray-400 outline-none py-[1px] px-[4px] w-full"
+                  className="border-[1px] border-gray-400 outline-none py-[1px] px-[4px] w-full min-h-[7rem]"
                   {...register("correctDocument", {
                     required: "Không được bỏ trống",
                   })}
@@ -270,14 +269,14 @@ const QuestionEditForm = ({ question, setQuestion, setLessons }) => {
             ) : question?.question?.type === "match" ? (
               <>
                 <label className="text-sm font-medium text-gray-700">
-                  Các từ bên cột trái cách nhau bởi dấu phẩy ","
+                  Các từ bên cột trái cách nhau bởi phím Enter
                 </label>{" "}
                 <br />
                 <textarea
                   id="leftOptions"
                   name="leftOptions"
                   type="text"
-                  className="border-[1px] border-gray-400 outline-none py-[1px] px-[4px] w-full"
+                  className="border-[1px] border-gray-400 outline-none py-[1px] px-[4px] w-full min-h-[7rem]"
                   {...register("leftOptions", {
                     required: "Không được bỏ trống",
                   })}
@@ -289,14 +288,14 @@ const QuestionEditForm = ({ question, setQuestion, setLessons }) => {
                 )}
                 <br />
                 <label className="text-sm font-medium text-gray-700">
-                  Các từ bên cột phải cách nhau bởi dấu phẩy ","
+                  Các từ bên cột phải cách nhau bởi phím Enter
                 </label>{" "}
                 <br />
                 <textarea
                   id="rightOptions"
                   name="rightOptions"
                   type="text"
-                  className="border-[1px] border-gray-400 outline-none py-[1px] px-[4px] w-full"
+                  className="border-[1px] border-gray-400 outline-none py-[1px] px-[4px] w-full min-h-[7rem]"
                   {...register("rightOptions", {
                     required: "Không được bỏ trống",
                   })}
@@ -308,15 +307,14 @@ const QuestionEditForm = ({ question, setQuestion, setLessons }) => {
                 )}
                 <br />
                 <label className="text-sm font-medium text-gray-700">
-                  Các cặp từ sau khi nối đúng được viết theo dạng a-b và cách
-                  nhau bởi dấu phẩy ","
+                  Các cặp từ sau khi nối đúng được viết theo dạng a-b và cách nhau bởi phím Enter
                 </label>{" "}
                 <br />
                 <textarea
                   id="correctMatches"
                   name="correctMatches"
                   type="text"
-                  className="border-[1px] border-gray-400 outline-none py-[1px] px-[4px] w-full"
+                  className="border-[1px] border-gray-400 outline-none py-[1px] px-[4px] w-full min-h-[7rem]"
                   {...register("correctMatches", {
                     required: "Không được bỏ trống",
                   })}
@@ -337,7 +335,7 @@ const QuestionEditForm = ({ question, setQuestion, setLessons }) => {
                   id="document"
                   name="document"
                   type="text"
-                  className="border-[1px] border-gray-400 outline-none py-[1px] px-[4px] w-full"
+                  className="border-[1px] border-gray-400 outline-none py-[1px] px-[4px] w-full min-h-[7rem]"
                   {...register("document", {
                     required: "Không được bỏ trống",
                   })}
@@ -349,14 +347,14 @@ const QuestionEditForm = ({ question, setQuestion, setLessons }) => {
                 )}
                 <br />
                 <label className="text-sm font-medium text-gray-700">
-                  Các từ để sắp xếp cách nhau bởi dấu phẩy ","
+                  Các từ để sắp xếp cách nhau bởi phím Enter
                 </label>{" "}
                 <br />
                 <textarea
                   id="words"
                   name="words"
                   type="text"
-                  className="border-[1px] border-gray-400 outline-none py-[1px] px-[4px] w-full"
+                  className="border-[1px] border-gray-400 outline-none py-[1px] px-[4px] w-full min-h-[7rem]"
                   {...register("words", {
                     required: "Không được bỏ trống",
                   })}
@@ -375,7 +373,7 @@ const QuestionEditForm = ({ question, setQuestion, setLessons }) => {
                   id="correctDocument"
                   name="correctDocument"
                   type="text"
-                  className="border-[1px] border-gray-400 outline-none py-[1px] px-[4px] w-full"
+                  className="border-[1px] border-gray-400 outline-none py-[1px] px-[4px] w-full min-h-[7rem]"
                   {...register("correctDocument", {
                     required: "Không được bỏ trống",
                   })}

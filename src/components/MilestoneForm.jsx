@@ -19,9 +19,9 @@ const MilestoneForm = ({ isOpen, setIsOpen, setMilestones, sectionId}) => {
     if (data) {
       try {
         const result = await instance.post(`admin/milestones?sectionId=${sectionId}`,{name: data.name});
-        setMilestones(result && result.data.data.milestones);
+        setMilestones(result.data.data.milestones);
         setMessage(result.data.message)
-        setTimeout(() => setIsOpen(false), 2500)
+        setTimeout(() => setIsOpen(false), 1000)
         setCountRequest(0)
       } catch (error) {
         setMessage(error.response.data.message)
