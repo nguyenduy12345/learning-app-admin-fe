@@ -20,6 +20,9 @@ const NavBar = () => {
         <NavLink to='/course_manage' className={({ isActive }) => `${isActive ? 'border-[1px] rounded-md border-blue-500 font-bold text-blue-500' : ''} cursor-pointer  w-full py-2 px-4 transition duration-200 ease-in-out`}>
           Khóa học
         </NavLink>
+        <NavLink to='/misson_manage' className={({ isActive }) => `${isActive ? 'border-[1px] rounded-md border-blue-500 font-bold text-blue-500' : ''} cursor-pointer  w-full py-2 px-4 transition duration-200 ease-in-out`}>
+          Nhiệm vụ
+        </NavLink>
         <NavLink to='/user_manage' className={({ isActive }) => `${isActive ? 'border-[1px] rounded-md border-blue-500 font-bold text-blue-500' : ''} cursor-pointer  w-full py-2 px-4 transition duration-200 ease-in-out`}>
           Người dùng
         </NavLink>
