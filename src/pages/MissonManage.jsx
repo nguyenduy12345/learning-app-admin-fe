@@ -1,36 +1,66 @@
-import React, { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useState, useEffect } from "react";
+
 import NavBar from "../components/NavBar.jsx";
 import MissonForm from "../components/MissonForm.jsx";
+import MissonEditForm from "../components/MissonEditForm.jsx";
+import Notification from "../components/NotificationPopup.jsx"
+import instance from "../utils/axiosRequest.js";
 const MissonManage = () => {
   const [missons, setMissons] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
+  const [type, setType] = useState("")
+  const [message, setMessage] = useState(false)
+  const [misson, setMisson] = useState(false)
+  const [countRequest, setCountRequest] = useState(0)
+  useEffect(() => {
+    const getMisson = async() => {
+      instance.get(`admin/missons?type=${type}`)
+      .then(res => setMissons(res.data.data.missons)) 
+      .catch(err => err)}
+    getMisson() 
+  },[type, setType])
   // Hàm xóa nhiệm vụ
-  const deleteTask = (index) => {
-    const newmissons = missons.filter((_, taskIndex) => taskIndex !== index);
-    setMissons(newmissons);
+  const handleDeleteMisson = async(id, index) => {
+    if (countRequest === 1) return;
+      setCountRequest((prev) => {
+        if (prev === 1) return prev;
+        return 1;
+      });
+    try {
+      const result = await instance.patch(`admin/missons/delete/${id}`)
+      setMissons(prevMissons => {
+        const updateMissons = [...prevMissons]
+        updateMissons.splice(index, 1)
+        return updateMissons
+      })
+      setCountRequest(0)
+      setMessage(result.data.message)
+    } catch (error) {
+      setMessage(error.response.data.message)
+      setCountRequest(0)
+    }
   };
-
-  // Hàm chỉnh sửa nhiệm vụ
-  const editTask = (index) => {
-    const taskToEdit = missons[index];
-    reset(taskToEdit); // Điền lại thông tin vào form để chỉnh sửa
-    deleteTask(index); // Xóa nhiệm vụ cũ trước khi chỉnh sửa
-  };
-
   return (
     <div className="flex">
       <NavBar />
-      <div className="min-h-screen w-full p-8">
+      <div className="min-h-screen w-full pr-8 py-8">
         <MissonForm
           isOpen={isOpen}
           setIsOpen={setIsOpen}
           setMissons={setMissons}
+          setMessage={setMessage}
         />
+        <MissonEditForm 
+          currentMisson={misson}
+          setMisson={setMisson}
+          setMissons={setMissons}
+          setMessage={setMessage}
+        />
+        <Notification  message={message} setMessage={setMessage}/> 
         {/* Header */}
         <div className="mb-2 flex justify-end">
           <select
-            onChange={(e) => handleFilterChange(e.target.value)} // Xử lý sự kiện thay đổi
+            onChange={(e) => setType(e.target.value)}
             className="border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 mr-2"
           >
             <option value="">Tất cả nhiệm vụ</option>
@@ -47,31 +77,33 @@ const MissonManage = () => {
             Tạo nhiệm vụ mới
           </button>
         </div>
-        {/* Task List */}
+        {/* misson List */}
         <div className="bg-white p-6 rounded shadow-lg">
           <h2 className="text-xl font-semibold mb-4">Các nhiệm vụ</h2>
           <ul>
             {missons?.length !== 0 &&
-              missons.map((task, index) => (
+              missons.map((misson, index) => (
                 <li
                   key={index}
                   className="flex justify-between items-center border-b border-gray-200 py-3"
                 >
-                  {/* Task details */}
+                  {/* misson details */}
                   <div className="flex-1">
-                    <p className="font-semibold text-lg">
-                      Loại nhiệm vụ: {task.taskType}
-                    </p>
-                    <p className="font-semibold text-lg mt-2">
-                      Mô tả nhiệm vụ: {task.taskDescription}
-                    </p>
+                    <span className="text-lg">
+                      Loại nhiệm vụ: 
+                    </span>
+                    <span className="font-semibold uppercase text-xl ml-2">{misson.type}</span> <br />
+                    <span className="text-lg mt-2">
+                      Mô tả nhiệm vụ: 
+                    </span>
+                    <span className="font-semibold uppercase text-xl ml-2">{misson.misson}</span>
                     <div className="text-gray-600 mt-2">
-                      <span>Tiền xu - Gems: {task.gems} | </span>
+                      <span>Tiền xu - Gems: {misson.gems} | </span>
                       <span>
-                        Điểm kinh nghiệm - Experience: {task.experiences} |{" "}
+                        Điểm kinh nghiệm - Experiences: {misson.experiences} |{" "}
                       </span>
-                      <span>Số lượt chơi - Hearts: {task.hearts} | </span>
-                      <span>Gifts: {task.gifts}</span>
+                      <span>Số lượt chơi - Hearts: {misson.hearts} | </span>
+                      <span>Gifts: {misson.gifts}</span>
                     </div>
 
                     {/* Status div (Active/Deleted) */}
@@ -89,13 +121,13 @@ const MissonManage = () => {
                   {/* Edit and Delete buttons */}
                   <div className="flex items-center space-x-2">
                     <button
-                      onClick={() => editTask(index)}
-                      className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600"
+                      onClick={() => setMisson({misson, index})}
+                      className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-yellow-600"
                     >
                       Sửa lại
                     </button>
                     <button
-                      onClick={() => deleteTask(index)}
+                      onClick={() => handleDeleteMisson(misson._id, index)}
                       className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
                     >
                       Xóa nhiệm vụ

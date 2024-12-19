@@ -73,7 +73,10 @@ const LessonManage = () => {
   };
   const handleDeleteLesson = async () => {
     if (countRequest === 1) return;
-    setCountRequest(1);
+      setCountRequest((prev) => {
+        if (prev === 1) return prev;
+        return 1;
+      });
     if (confirmToDelete === lesson.name) {
       try {
         const result = await instance.patch(
@@ -102,6 +105,11 @@ const LessonManage = () => {
   };
   const handleDeleteQuestion = async (id, index, lessonIndex, lessonId) => {
     if (confirm("Bạn có muốn xóa câu hỏi?")) {
+      if (countRequest === 1) return;
+      setCountRequest((prev) => {
+        if (prev === 1) return prev;
+        return 1;
+      });
       try {
         await instance.patch(`admin/questions/delete/${id}`);
         const result = await instance.patch(
@@ -160,6 +168,7 @@ const LessonManage = () => {
         courseId={courseId}
         sectionId={sectionId}
         milestoneId={milestoneId}
+        setMessage={setMessage}
       />
       <LessonEditForm
         isEditLesson={isEditLesson}
@@ -170,12 +179,14 @@ const LessonManage = () => {
         courseId={courseId}
         sectionId={sectionId}
         milestoneId={milestoneId}
+        setMessage={setMessage}
       />
       <QuestionEditForm
         question={question}
         setQuestion={setQuestion}
         lessons={lessons}
         setLessons={setLessons}
+        setMessage={setMessage}
       />
       <div className="container mx-auto mt-6">
         <div className="w-[98%] mb-[0.5rem] flex justify-between mx-auto">

@@ -31,8 +31,11 @@ const UserManege = () => {
     setPages(listPage)
   },[countPage])
   const handleBanUser = async(id, index) => {
-    if(countRequest === 1) return
-    setCountRequest(0)
+    if (countRequest === 1) return;
+      setCountRequest((prev) => {
+        if (prev === 1) return prev;
+        return 1;
+      });
     try {
       const result = await instance.patch(`admin/users/${id}?ban=true`)
       if(result){
@@ -47,8 +50,11 @@ const UserManege = () => {
     }
   }
   const handleUnbanUser = async(id, index) => {
-    if(countRequest === 1) return
-    setCountRequest(0)
+    if (countRequest === 1) return;
+      setCountRequest((prev) => {
+        if (prev === 1) return prev;
+        return 1;
+      });
     try {
       const result = await instance.patch(`admin/users/${id}?ban=false`)
       if(result){

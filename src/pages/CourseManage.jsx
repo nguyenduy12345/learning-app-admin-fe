@@ -34,7 +34,10 @@ const CourseManage = () => {
   }
   const handleHiddenCourse = async () => {
     if (countRequest === 1) return;
-    setCountRequest(1);
+      setCountRequest((prev) => {
+        if (prev === 1) return prev;
+        return 1;
+      });
     if(confirmToDelete === course.name){
       try {
         const result = await instance.patch(`admin/courses/${course._id}?deleted=true`);
@@ -72,8 +75,8 @@ const CourseManage = () => {
         </div>
       )}
       <NotificationPopup message={message} setMessage={setMessage} />
-      <CourseForm isOpen={isOpen} setIsOpen={setIsOpen} setCourses={setCourses} />
-      <CourseEditForm isEdit={isEdit} setIsEdit={setIsEdit} courses={courses} setCourses={setCourses} course={course}/>
+      <CourseForm isOpen={isOpen} setIsOpen={setIsOpen} setCourses={setCourses} setMessage={setMessage} />
+      <CourseEditForm isEdit={isEdit} setIsEdit={setIsEdit} courses={courses} setCourses={setCourses} course={course} setMessage={setMessage}/>
       <div className="container mx-auto mt-6">
         <div className="w-[98%] mb-[0.5rem] flex justify-between mx-auto">
           <ul className="flex">

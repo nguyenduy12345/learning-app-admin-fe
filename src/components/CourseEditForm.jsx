@@ -3,10 +3,9 @@ import { useForm } from "react-hook-form";
 
 import instance from "../utils/axiosRequest.js";
 import NotificationPopup from "./NotificationPopup.jsx";
-const CourseEditForm = ({ isEdit, setIsEdit, courses, setCourses, course}) => {
+const CourseEditForm = ({ isEdit, setIsEdit, courses, setCourses, course, setMessage}) => {
   const [countRequest, setCountRequest] = useState(0);
   const [image, setImage] = useState(null);
-  const [message, setMessage] = useState();
   const {
     register,
     handleSubmit,
@@ -70,7 +69,6 @@ const CourseEditForm = ({ isEdit, setIsEdit, courses, setCourses, course}) => {
   return (
     isEdit && (        
       <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex justify-center items-center">
-        <NotificationPopup message={message} setMessage={setMessage} />
         <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-sm">
           <h2 className="text-xl font-semibold mb-4">Thay đổi thông tin</h2>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">

@@ -35,8 +35,11 @@ const MilestoneManage = () => {
       setMilestone(milestone)
     }
      const handleDeleteMilestone = async () => {
-        if (countRequest === 1) return;
-        setCountRequest(1);
+      if (countRequest === 1) return;
+      setCountRequest((prev) => {
+        if (prev === 1) return prev;
+        return 1;
+      });
         if(confirmToDelete === milestone.name){
           try {
             const result = await instance.patch(`admin/milestones/${milestone._id}?deleted=true`);
@@ -74,9 +77,8 @@ const MilestoneManage = () => {
         </div>
       )}
       <NotificationPopup message={message} setMessage={setMessage} />
-      <NotificationPopup message={message} setMessage={setMessage} />
-      <MilestoneForm isOpen={isOpen} setIsOpen={setIsOpen} setMilestones={setMilestones} sectionId={sectionId} />
-      <MilestoneEditForm isEdit={isEdit} setIsEdit={setIsEdit} milestones={milestones} setMilestones={setMilestones} milestone={milestone} sectionId={sectionId} />
+      <MilestoneForm isOpen={isOpen} setIsOpen={setIsOpen} setMilestones={setMilestones} sectionId={sectionId} setMessage={setMessage}/>
+      <MilestoneEditForm isEdit={isEdit} setIsEdit={setIsEdit} milestones={milestones} setMilestones={setMilestones} milestone={milestone} sectionId={sectionId} setMessage={setMessage}/>
       <div className="container mx-auto mt-6">
       <div className="w-[98%] mb-[0.5rem] flex justify-between mx-auto">
           <ul className="flex gap-2">

@@ -11,9 +11,8 @@ import {
   convertStringToArrayObjects,
 } from "../functions/convertString.js";
 
-const QuestionEditForm = ({ question, setQuestion, setLessons }) => {
+const QuestionEditForm = ({ question, setQuestion, setLessons, setMessage }) => {
   const [countRequest, setCountRequest] = useState(0);
-  const [message, setMessage] = useState();
   const {
     register,
     handleSubmit,
@@ -49,7 +48,10 @@ const QuestionEditForm = ({ question, setQuestion, setLessons }) => {
   }, [question, setValue]);
   const onSubmit = async (data) => {
     if (countRequest === 1) return;
-    setCountRequest(1);
+      setCountRequest((prev) => {
+        if (prev === 1) return prev;
+        return 1;
+      });
     if (data) {
       try {
         let payload = data;
@@ -136,7 +138,6 @@ const QuestionEditForm = ({ question, setQuestion, setLessons }) => {
   return (
     question && (
       <div className="fixed z-20 inset-0 bg-gray-500 bg-opacity-75 flex justify-center items-center">
-        <NotificationPopup message={message} setMessage={setMessage} />
         <div className="bg-white p-6 rounded-lg shadow-xl w-[50%]">
           <h2 className="text-2xl font-semibold mb-4 text-center">
             Thay đổi câu hỏi

@@ -1,15 +1,21 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import instance from "../utils/axiosRequest.js";
-const MissonForm = ({ setMissons, setIsOpen, isOpen, setMessage }) => {
+const MissonEditForm = ({ setMissons, currentMisson, setMisson, setMessage }) => {
   const [countRequest, setCountRequest] = useState(0);
   const {
     register,
     handleSubmit,
     reset,
-    formState: { errors, isSubmitting },
+    formState: { errors, isSubmitting, isDirty },
   } = useForm();
+  useEffect(() => {
+    reset(currentMisson?.misson)
+  },[currentMisson])
   const onSubmit = async (data) => {
+    if(!isDirty){
+        setMisson(false)
+    }
     if (data) {
       if (countRequest === 1) return;
       setCountRequest((prev) => {
@@ -17,26 +23,40 @@ const MissonForm = ({ setMissons, setIsOpen, isOpen, setMessage }) => {
         return 1;
       });
       try {
-        const result = await instance.post("admin/missons", { ...data });
+        const {misson, type, numberOfRequirements, experiences, gems, gifts, hearts} = data
+        const result = await instance.patch(`admin/missons/update/${currentMisson.misson._id}`, { 
+           misson,
+           type,
+           numberOfRequirements,
+           experiences,
+           gems,
+           hearts,
+           gifts
+        });
         setMessage(result.data.message);
         setCountRequest(0);
-        setMissons((prevMissons) => [data, ...prevMissons]);
+        setMissons((prevMissons) => {
+            const updateMissons = [...prevMissons]
+            updateMissons[currentMisson.index] = data
+            return updateMissons
+        });
+        setMisson(false)
         reset();
         setIsOpen(false);
       } catch (error) {
-        setMessage(error.response.data.message);
+        setMessage(error.response.data.message)
         setCountRequest(0);
       }
     }
   };
   return (
-    isOpen && (
+    currentMisson && (
       <div className="fixed w-[70vw] left-1/2 -translate-x-1/2 bg-white p-6 rounded shadow-lg mb-6">
         <i
-          onClick={() => setIsOpen(false)}
+          onClick={() => setMisson(false)}
           className="fa-sharp fa-solid fa-xmark absolute right-[2rem] top-[2rem] text-3xl cursor-pointer"
         ></i>
-        <h2 className="text-xl font-semibold mb-4">Tạo nhiệm vụ mới</h2>
+        <h2 className="text-xl font-semibold mb-4">Thay đổi thông tin nhiệm vụ</h2>
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="mb-4">
             <label className="block text-gray-700">
@@ -156,4 +176,4 @@ const MissonForm = ({ setMissons, setIsOpen, isOpen, setMessage }) => {
   );
 };
 
-export default MissonForm;
+export default MissonEditForm;

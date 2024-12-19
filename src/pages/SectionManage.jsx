@@ -33,8 +33,11 @@ const SectionManage = () => {
     setSection(section)
   }
    const handleDeleteSection = async () => {
-      if (countRequest === 1) return;
-      setCountRequest(1);
+    if (countRequest === 1) return;
+    setCountRequest((prev) => {
+      if (prev === 1) return prev;
+      return 1;
+    });
       if(confirmToDelete === section.name){
         try {
           const result = await instance.patch(`admin/sections/${section._id}?deleted=true`);
@@ -72,8 +75,8 @@ const SectionManage = () => {
         </div>
       )}
       <NotificationPopup message={message} setMessage={setMessage} />
-      <SectionForm isOpen={isOpen} setIsOpen={setIsOpen} setSections={setSections} courseId={courseId} />
-      <SectionEditForm isEdit={isEdit} setIsEdit={setIsEdit} sections={sections} setSections={setSections} section={section} courseId={courseId} />
+      <SectionForm isOpen={isOpen} setIsOpen={setIsOpen} setSections={setSections} courseId={courseId} setMessage={setMessage}/>
+      <SectionEditForm isEdit={isEdit} setIsEdit={setIsEdit} sections={sections} setSections={setSections} section={section} courseId={courseId} setMessage={setMessage} />
       <div className="container mx-auto mt-6">
       <div className="w-[98%] mb-[0.5rem] flex justify-between mx-auto">
           <ul className="flex gap-2">

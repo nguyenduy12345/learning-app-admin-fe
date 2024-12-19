@@ -4,9 +4,8 @@ import { useForm } from "react-hook-form";
 import instance from "../utils/axiosRequest.js";
 import NotificationPopup from "./NotificationPopup.jsx";
 
-const SectionEditForm = ({ isEdit, setIsEdit, sections, setSections, section}) => {
+const SectionEditForm = ({ isEdit, setIsEdit, sections, setSections, section, setMessage}) => {
   const [countRequest, setCountRequest] = useState(0);
-  const [message, setMessage] = useState();
   const {
     register,
     handleSubmit,
@@ -20,7 +19,10 @@ const SectionEditForm = ({ isEdit, setIsEdit, sections, setSections, section}) =
   }, [section, setValue]);
   const onSubmit = async (data) => {
     if (countRequest === 1) return;
-    setCountRequest(1);
+      setCountRequest((prev) => {
+        if (prev === 1) return prev;
+        return 1;
+      });
     if (data) {
       try {
         const result = await instance.patch(`admin/sections/${section._id}`,{name: data.name});
@@ -30,7 +32,7 @@ const SectionEditForm = ({ isEdit, setIsEdit, sections, setSections, section}) =
             setSections([...sections]);
         }
         setMessage(result.data.message)
-        setTimeout(() => setIsEdit(false), 1000)
+        setIsEdit(false)
         setCountRequest(0)
       } catch (error) {
         setMessage(error.response.data.message)
@@ -41,7 +43,6 @@ const SectionEditForm = ({ isEdit, setIsEdit, sections, setSections, section}) =
   return (
     isEdit && (        
       <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex justify-center items-center">
-        <NotificationPopup message={message} setMessage={setMessage} />
         <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-sm">
           <h2 className="text-xl font-semibold mb-4">Thay đổi phần học</h2>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">

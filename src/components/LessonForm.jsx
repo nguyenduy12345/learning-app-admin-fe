@@ -14,8 +14,8 @@ const LessonForm = ({
   courseId,
   sectionId,
   milestoneId,
+  setMessage
 }) => {
-  const [message, setMessage] = useState(false);
   const [countRequest, setCountRequest] = useState(0);
   const [questions, setQuestions] = useState([]);
   const {
@@ -38,7 +38,10 @@ const LessonForm = ({
         };
       });
       if (countRequest === 1) return;
-      setCountRequest(1);
+      setCountRequest((prev) => {
+        if (prev === 1) return prev;
+        return 1;
+      });
       try {
         const resultAddQuestions = await instance.post('admin/questions',{questions: formatQuestions})
         const questionIds = resultAddQuestions.data.data.resultAddQuestions.map(item => {
@@ -52,7 +55,7 @@ const LessonForm = ({
         const resultCreateLesson = await instance.post('admin/lessons',{data})
         setMessage(resultCreateLesson.data.data.message)
         setLessons(resultCreateLesson.data.data.lessons)
-        setTimeout(() => setIsOpen(false), 1000)
+        setIsOpen(false)
         setQuestions([])
         setCountRequest(0);
       } catch (error) {
@@ -98,7 +101,6 @@ const LessonForm = ({
   return (
     isOpen && (
       <div className="w-[90vw] absolute left-1/2 -translate-x-1/2 z-10 mx-auto flex items-center justify-center p-4">
-        <NotificationPopup message={message} setMessage={setMessage} />
         <div className="bg-white p-6 rounded-lg shadow-lg w-full">
           <i
             onClick={() => setIsOpen(false)}

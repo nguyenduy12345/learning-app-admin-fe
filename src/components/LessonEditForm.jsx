@@ -15,9 +15,9 @@ const LessonEditForm = ({
   setLessons,
   lesson,
   courseId,
+  setMessage
 }) => {
   const [countRequest, setCountRequest] = useState(0);
-  const [message, setMessage] = useState();
   const [questions, setQuestions] = useState([]);
   const {
     register,
@@ -38,7 +38,10 @@ const LessonEditForm = ({
       return;
     }
     if (countRequest === 1) return;
-    setCountRequest(1);
+      setCountRequest((prev) => {
+        if (prev === 1) return prev;
+        return 1;
+      });
     if (data) {
       try {
         if (questions.length !== 0) {
@@ -105,7 +108,7 @@ const LessonEditForm = ({
           setLessons([...lessons]);
         }
         setMessage(result.data.message);
-        setTimeout(() => setIsEditLesson(false), 1000);
+        setIsEditLesson(false)
         setCountRequest(0);
       } catch (error) {
         setMessage(error.response.data.message);
@@ -147,7 +150,6 @@ const LessonEditForm = ({
   return (
     isEditLesson && (
       <div className="w-[90vw] absolute left-1/2 -translate-x-1/2 z-10 mx-auto flex items-center justify-center p-4">
-        <NotificationPopup message={message} setMessage={setMessage} />
         <div className="bg-white p-6 rounded-lg shadow-lg w-full">
           <i
             onClick={() => setIsEditLesson(false)}
